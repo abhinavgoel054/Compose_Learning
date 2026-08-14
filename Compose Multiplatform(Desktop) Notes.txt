@@ -1,0 +1,3123 @@
+
+############################################### MODULE 0 : FOUNDATION ##########################################################
+
+Kotlin is a programming language. It can be used to write many types of applications.
+
+Types of Applications which Kotlin Support :
+	│
+	├── Console Application		-	A console application is any program that runs in a console/terminal.
+	├── Desktop Application
+	├── Android Application
+	├── Web Application
+	├── Server Application
+	└── CLI Application			- is a special type of console application that accepts commands or arguments from the user.Example : git status
+
+
+Kotlin can be used to develop many application types : 
+											Kotlin
+											 │
+        ┌────────────────────────────────────┼────────────────────────────────────────┐
+        ▼         						     ▼         							      ▼
+    Desktop App   						 Android App   							  Server App
+        │         						     │         							      │
+        ▼         						     ▼         							      ▼
+Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
+(Desktop Target)       					Jetpack Compose    						 (No UI)
+	│
+	├── Android Target
+	├── Desktop Target
+	├── Web Target
+	└── iOS Target
+	
+	
+*********************************CHAPTER 1 —  Desktop Application Lifecycle *********************************
+
+--> What Is A Desktop Application?
+		A desktop application is a program that runs as a process under the Operating System (such as Windows, Linux, or macOS) and provides a Graphical User Interface (GUI) through which the user interacts with the application.
+
+--> Desktop Application Lifecycle
+	User	->	Double Clicks EXE	->	Windows Operating System	->	Loads EXE into RAM	->	Creates Process	->	Initializes Process Resources	->	Starts Primary Thread	->	Transfers Execution to Entry Point	->	main() Executes
+
+--> Desktop Application Startup Flow : 
+
+	Step 1 : User Starts The Application
+		The user double-clicks an executable (.exe) file.
+		The double-click is received by the Windows Operating System, not by the application.
+		The application is not running, No Process Exist, No Window Exist yet.
+
+		--> What Is An Executable (.exe)?	
+			An Executable (EXE) is a file that contains	:	Machine instructions	|	Program code	|	Static data	|	Information required by the operating system to load the program
+			An EXE is not a running program.It is simply a file stored on secondary storage.
+			
+	Step 2 : Windows Loads The Executable into RAM
+		Windows identifies the .exe file as an executable program.
+		Before execution can begin, Windows loads the executable image from secondary storage (SSD/HDD) into RAM.
+
+		Reason	:	The CPU executes instructions from memory (RAM), not directly from disk.
+		
+	Step 3 : Windows Creates A Process
+		An executable (.exe) is only a file stored on disk. It is NOT a running program.
+		
+		When Windows starts the executable, it creates a Process.
+			Think:
+				EXE       -> Blueprint
+				Process   -> Running Program
+		
+		A Process is a running instance of a program. During process creation Windows initializes :  Program Code | Stack | Heap | Global Variables | Primary Thread | Handles | Environment
+		These resources do not exist inside the .exe file. They are created only when the process starts.
+	
+	Step 4 : Windows Transfers Control To The Entry Point
+		After the process is initialized, Windows transfers execution to the program's entry point.
+		For a Kotlin/JVM Desktop application, execution eventually reaches :  fun main(args: Array<String>)
+		
+		At this stage:
+
+			✓ Process is running.
+			✓ main() is executing.
+			* window not exist
+
+		However, No graphical window exists yet.
+
+		Reason : The program has not requested the operating system to create a window.
+		
+==> SUMMARY OF CHAPTER 1 :
+		User		->		Starts EXE		->		Windows Operating System		->		Loads EXE into RAM		->		Creates Process		->		
+																																					|
+																																					|
+																																					↓						
+		No Window Exists Yet		<-		main() Starts Executing		<-		Transfers Execution to Entry Point		<-		Initializes[Program Code / Stack / Heap / Global Variables / Primary Thread / Handles / Environment Information]
+						
+			
+********************************* CHAPTER 2 — Windowing System [Who actually creates the first window?] *********************************
+
+--> What Is A Windowing System?
+		It is a part of the Operating System for creating and managing graphical windows.
+		
+		Responsible  : Creating Window | Showing Window | Moving Window | Resizing Window | Closing Window | Mouse Events | Keyboard Events
+
+--> Does Every Process Have A Window?	-   NO.
+
+    Reason : Not every application requires a GUI.
+		Examples : Git | Compiler | Ping | CMake
+
+    Rule : A process does NOT automatically get a Window.The application must request Windows OS to create one.
+
+--> Who Creates The Window?
+		Application does NOT create the Window.
+		
+		Flow : Application -> Windows API -> Windowing System -> Native Window Created
+			
+--> Windows API
+		The Operating System exposes functions that applications use to communicate with Windows.
+			Examples : CreateWindow() | DestroyWindow() | ShowWindow() | MoveWindow() 
+			Think    : Just like we call class methods, applications call Windows APIs.
+
+--> Native Window
+	The actual window displayed on the screen is called a Native Window.belongs to Operating System.Every visible desktop window is a native operating system object.
+
+--> Window Handle (HWND)
+		Windows does NOT return the actual Window object.	
+		It returns : HWND (Window Handle)
+		Applications use this handle whenever they want Windows to perform another operation.
+		Example : HWND	->	MoveWindow()
+		
+		Think :  HWND = Window ID / Window Reference
+
+--> Why Doesn't Windows Return The Actual Window?
+	If applications directly modified internal Window objects, they could corrupt the Operating System.
+
+
+--> Event Driven Programming
+	Console programs execute sequentially.
+		Example Console Application Works : Step 1 -> Step 2 -> Step 3 -> Exit
+
+    Desktop Application : User decides execution flow.
+        Example : Click Button | Press Key | Resize Window | Move Window
+
+
+--> What Is An Event?
+	An Event is an action that occurs while the application is running.
+		Examples	:	Mouse Click		|	Mouse Move
+
+		
+--> Message Queue
+		Windows OS receives hardware events.
+		Examples : Mouse Click | Keyboard Press | Window Resize
+
+    Windows converts them into Messages. These Messages are stored inside : Message Queue (Memory)
+
+--> Message Flow
+		User Clicks Mouse -> Windows OS Detects Event -> Create Message -> Store in Message Queue -> Application Reads Message -> Process Message
+
+--> Message Loop
+	Desktop applications should continue running after creating a window.
+	Therefore they continuously check for new messages.This continuous loop is called the Message Loop.
+
+
+
+********************************* FLOW OF CHAPTER 1 AND 2 *********************************
+
+User Double Clicks EXE  ->  Windows Operating System  ->  Loads EXE into RAM  ->  Creates Process  ->  Creates Stack, Heap, Thread...  ->  Calls main()
+																																				│
+																																				│
+																																				│
+																																				│
+		Returns Window Handle (HWND)  <-	Creates Native Window  <-	Windowing System  <-	Windows API  <-	Application requests Window	 <--│
+		│
+		│
+		│
+		│										──────── Runtime ────────
+		│-->  Application Starts Message Loop  ->  User clicks mouse  ->  Windows receives event  ->  Creates Message  ->  Stores Message in Message Queue
+																																				│
+																																				│
+																																				│
+																																				│
+																				Application processes Message <-  Application reads Message  <--│
+
+
+********************************* CHAPTER 3 — Why Do We Need a UI Framework? *********************************
+
+--> Why WE need Compose(framework) if Windows(OS) already provides API like : CreateWindow(), ShowWindow(), MoveWindow() becuase We can directly use that API into our Kotlin Application 
+		1. A UI Framework does not add new capabilities to the operating system. It provides a higher-level abstraction over the low-level APIs.
+		2. Windows already has all the capabilities. Compose provides a much easier and more organized way to use those capabilities.
+		
+		Example without Compose :	Create Button | Set Width  | Set Height | Set Font | Set X Position | Set Y Position		Lots of Works
+		
+		Example of Compose 		:	
+					Button(
+						modifier = Modifier.padding(16.dp)
+					)
+					Compose internally calculates : Position | Size | Drawing | Layout | Recomposition and then eventually communicates with the operating system.
+		
+--> Compose was created because writing directly with low-level APIs becomes:
+		Too much code
+		Difficult to maintain
+		Difficult to adapt to different screen sizes
+		Difficult to reuse UI components
+		
+--> Can Kotlin Create UI?		-	   NO.
+		Kotlin is only a programming language.
+		
+		Kotlin provides 		:  Variables | Functions | Classes | Coroutines | Collections 
+		It does NOT provide		:  Window |  Button | TextField | Image | Row | Column
+
+		To create Desktop UI, Kotlin can use: : Compose Desktop / JavaFX / Swing
+
+--> Can C++ Create UI?		-	   NO.
+	C++ applications also require : Win32 API	|	MFC	|	Qt	|	wxWidgets
+		
+--> Problems with Win32 API
+		Win32 API is a low-level API. It provides maximum control but requires a large amount of manual work.
+		Every Windows desktop application ultimately depends on it (directly or indirectly).
+		
+		We have to manually : Create Window | Create Label | Create TextBox | Create Password Box
+		
+		Main Problem :  Too much Boilerplate Code. | Manual X,Y Positioning | Difficult Maintenance. |  Manual Message Handling. | Platform Dependent (Windows Only)
+		
+--> Why Do We Need A UI Framework?
+		Instead of working directly with low-level APIs, developers use a UI Framework.
+		
+		Instead of writing low-level code, it provides high-level components.
+			Examples :  Window |   Button |  Text |   TextField |  Image |  Menu
+			
+--> Responsibilities Of UI Framework
+	A UI Framework provides high-level components and hides platform-specific implementation.
+
+	Responsibilities : Create UI Components.  | Manage Layout | Handle Events |  Draw UI |  Manage UI State | Hide Platform Specific APIs
+	
+--> Does A UI Framework Replace The Operating System?	No
+	The Operating System still creates : Native Windows	|	Mouse Events	|	Keyboard Events
+	The framework simply communicates with the Operating System on behalf of the application.
+
+********************************* Chapter 4 — Evolution of Desktop UI *********************************
+--> Desktop UI Architecture
+
+        Application		->		UI Framework		->		Native API		->		Operating System
+
+
+Layer 1 - Operating System
+	
+	Responsibilities:
+		The OS actually creates : Create Window | Move Window | Resize Window | Destroy Window |  Mouse Events | Keyboard Events | Message Queue
+
+Layer 2 - Native API
+
+    Native API is provided by the Operating System.
+
+    Purpose :  Allows applications/frameworks to communicate with the Operating System.
+
+    Example (Windows):  Win32 API
+	
+	Example Functions : CreateWindow() |  ShowWindow() | DestroyWindow()
+
+
+Layer 3 - UI Framework
+	 
+	UI Framework sits above Native API. 
+	Frameworks like : MFC  |  Qt  |  Swing  |  JavaFX  |  Jetpack Compose	|	Compose Multiplatform
+	
+	Responsibilities :	Reduce Boilerplate Code		|	Provide Ready-Made UI Components	|        Handle Layout	|	Handle Events	|	Improve Maintainability		|		Hide Native API Complexity.
+	
+--> Evolution
+
+        Win32 API (Native API)
+              │
+              ▼
+        MFC (C++ Framework)
+              │
+              ▼
+        Swing (Java Framework)
+              │
+              ▼
+        JavaFX (Modern Java Framework)
+              │
+              ▼
+        Android XML
+              │
+              ▼
+        Jetpack Compose
+              │
+              ▼
+        Compose Multiplatform
+	
+--> Win32 API
+
+    • Native Windows API.	|	• Provided by Microsoft.		|	• Used to communicate with Windows OS.	|	• Low-Level Programming.
+    • Maximum Control.		|	• Too much Boilerplate Code.	|	• Manual UI Management.
+	
+--> MFC (Microsoft Foundation Classes)
+
+    • C++ UI Framework by Microsoft.	|	• Object-Oriented Wrapper over Win32 API.	|	• Reduces Boilerplate Code.	|	• Internally uses Win32 API.
+	
+	Flow : 	Application	->	MFC		->	Win32 API		->	Windows OS
+	
+--> Swing
+
+    • Java UI Framework.			|	• Platform Independent.					|	• Write Once, Run Anywhere.			 |	• Internally communicates with Native APIs through JVM.
+    • On Windows → Uses Win32 API.	|	• On Linux → Uses Linux Native APIs.	|	• On macOS → Uses macOS Native APIs.
+
+    Flow (Windows):   Application	->	Swing	->	JVM		->		Win32 API		->	Windows OS
+	
+--> JavaFX
+
+    • Modern Java UI Framework.		|	• Replacement for Swing.		|	• Better UI.		|	• Better Animation.
+    • Better Styling.				|	• CSS Support.					|	• FXML Support.
+
+    JavaFX also communicates with Native APIs through the JVM.
+		
+--> Android XML		
+	
+	Developed by Google for Android applications. It is NOT used in Desktop Applications.
+	XML is a Markup Language, not a programming language.
+	Example:
+        activity_login.xml		->	  XML File 				=>  UI Design
+                +
+        LoginActivity.kt		->	 Kotlin / Java File		=> Business Logic
+   
+	XML Purpose : Used to describe UI.
+		Example : Button | TextView | EditText | ImageView
+		
+		
+	Responsibilities :
+	
+		XML					:	UI Design	  |	Screen Layout	|	UI Components
+		
+		Kotlin / Java		:	Click Events  | Validation  	|  API Calls  |  Database  |  Navigation  |  Business Logic	
+	
+	Advantages : 
+			• Separation of UI and Logic. | • Easy for Designers. | • Better Organization (Initially).
+			
+	Problems : 
+			• Two files for one screen.  |  • Constant switching between XML and Kotlin.  |  • Difficult to maintain large projects.
+			• UI updates require communication between XML and Kotlin.  |  • More Boilerplate Code.
+			
+--> Jetpack Compose
+
+	Developed by Google .Replace Android XML with Jetpack Compose .
+
+	Jetpack Compose is a modern UI Toolkit developed by Google for building Android user interfaces using Kotlin instead of XML.
+	
+	Instead of writing UI in XML, developers describe UI directly using Kotlin.
+	
+	Advantages of Compose :
+		One Language	|	Less Boilerplate |  Easier Maintenance  |  Modern UI Development[Declarative UI]
+		
+		
+--> Compose Multiplatform
+
+    Developed by JetBrains.
+	
+	JetBrains extended the Jetpack Compose programming model so the same UI code can run on multiple platforms.
+	
+	Targets:
+		Android
+		Desktop (Windows, Linux, macOS)
+		iOS
+		Web (Experimental)
+
+	Current Project :    Desktop Target (Windows)
+
+
+
+###########################################################################################################################################
+############################################### MODULE 1 : COMPOSE MULTIPLATFORM ##########################################################
+
+********************************* CHAPTER 5 — What Exactly Is Compose Multiplatform *********************************
+
+--> Before Learning Compose Multiplatform
+	Kotlin is a Programming Language.
+	A Programming Language cannot create UI by itself.
+	We need a UI Framework to build graphical user interfaces.
+	
+	So now Which UI Framework are we using in our project?	:
+		Compose Multiplatform
+
+
+What is a Framework? 	-	A framework is a collection of pre-written code, libraries, and rules that helps you build applications faster.
+	Examples: Kotlin
+				│
+				├── Jetpack Compose (Android UI Framework)
+				├── Compose Multiplatform (Cross-platform UI Framework)
+				├── Ktor (Backend Framework)
+				└── Spring Boot (Backend Framework for Java/Kotlin)
+
+--> What is Compose Multiplatform
+	Compose Multiplatform is a UI Framework developed by JetBrains for building graphical user interfaces using Kotlin.
+	It provides everything required to build a modern user interface.
+	Examples : Window | Button | Text | TextField
+	
+	Instead of creating these components manually using operating system APIs, we simply use the components provided by Compose.
+	Example:
+		Button(onClick = { })
+		{
+			Text("Login")
+		}
+	Compose internally communicates with the operating system.
+		
+--> Why Was Compose Multiplatform Created?
+	Before Compose Multiplatform, different platforms used different UI frameworks.
+		
+		Example:
+			Windows Desktop      → Win32 API / MFC / Swing / JavaFX
+			Android            	 → XML
+			iOS                	 → SwiftUI / UIKit
+			Web                	 → HTML + CSS + JavaScript
+	
+		Every platform required learning a completely different way of building UI.
+		So JetBrains wanted developers to use Kotlin to build applications for multiple platforms while writing as much shared code as possible.
+		
+		So they created  Compose Multiplatform :
+			It supports multiple platforms called Targets. 
+				Compose Multiplatform
+				│
+				├── Android Target
+				├── Desktop Target
+				├── iOS Target
+				└── Web Target (Experimental)
+		
+		--> Desktop Target
+			Desktop Target allows us to build applications for : Windows | Linux | macOS
+		
+		--> Android Target
+			Android Target allows the same Compose programming model to run on Android.Instead of writing XML,we write UI using Kotlin.
+			
+		--> iOS Target
+			Compose Multiplatform also supports iOS.The UI is still written using Kotlin.Platform-specific code can still be added whenever required.	
+		
+--> What Is A UI Toolkit?
+	A UI Toolkit is a collection of reusable UI components, drawing logic, layout systems and utilities that help developers build graphical user interfaces.
+	Instead of creating everything from scratch, we simply use the tools provided by the toolkit.
+	
+	Example : Button | Text | Column | Row | Image | Window | Modifier | MaterialTheme
+	
+	
+--> UI Toolkit vs UI Framework
+	
+	A UI Toolkit mainly provides reusable UI components.
+	A UI Framework provides : UI Components | Architecture | Rules | Runtime | State Management | Event Handling | Layout System
+
+	Compose Multiplatform provides all of these.
+
+
+--> Declarative UI	vs Imperative UI
+
+	Declarative means : 
+		Describe what the UI should look like.
+			Example : Text("Hello")
+	
+		We are simply describing the UI.Compose decides : Size | Drawing | Rendering | Updating
+		
+		Flow : State Changes	->	Compose Detects Change	->	Recomposition	->	Updated UI
+		
+	Imperative means : 
+		Tell the framework how to perform every step.
+		Example : Suppose I want a Login Button
+			So we explained every step to Framework like : Create Window -> Create Button -> Set Width -> Set Height -> Set Color -> Set Position -> Draw Button
+		
+		Exampele : User Clickk		->		Increase countk		->		Find TextViewk		->		Convert Int → Stringk		->		Set Textk		->		Refresh UI
+	
+	--> Why Did Google Choose Declarative UI?
+		Modern applications constantly change.Updating every UI component manually becomes difficult.
+		Frameworks like Compose automatically update the UI whenever the application's State changes.his makes applications : Easier to write | Easier to maintain
+
+--> Why Is Compose Called Declarative?
+		Compose follows the Declarative UI approach.The developer describes what the UI should look like.Compose decides how to create and update that UI.
+			
+************************************************** CHAPTER 6 — Kotlin Prerequisites ***********************************************
+--> Unit
+
+    Unit is a Kotlin return type that represents "No Return Value".
+
+    Similar to C++ :
+        C++        ->    void
+        Kotlin     ->    Unit
+
+    Example :
+        fun greet(): Unit {
+            println("Hello")
+        }
+
+    Since Unit is the default return type, Kotlin allows us to omit it.
+	
+	Both functions are equivalent.
+
+	fun greet(): Unit {
+		println("Hello")
+	}
+
+	fun greet() {
+		println("Hello")
+	}
+
+	The compiler automatically assumes the return type is Unit.
+
+    Meaning :
+
+        Unit
+            ↓
+        No Return Value
+
+		
+--> Function Return Types
+
+	Every function may either :	 Return Nothing		|	Return a Value
+
+	General Syntax :
+		fun functionName(parameters): ReturnType {
+		}
+
+	Examples :
+		1. Return Unit
+			fun display() {
+				println("Hello")
+			}
+
+		2. Return Int
+			fun add(a: Int, b: Int): Int {
+				return a + b
+			}
+
+		3. Return String
+			fun getName(): String {
+				return "Abhinav"
+			}
+
+	Flow :
+		Function Executes
+				│
+				├── Return Nothing
+				│		 ↓
+				│		Unit
+				│
+				└── Return Value
+						 ↓
+					Int / String / Boolean / etc.
+
+
+--> Expression Body Functions (=)
+
+	Normally we write :
+
+		fun add(a: Int, b: Int): Int {
+			return a + b
+		}
+
+	Kotlin provides a shorter syntax : fun add(a: Int, b: Int): Int = a + b
+
+	This is called an Expression Body Function.
+
+	Meaning :	"="	->	Return the result of this expression.
+	
+	Why was Expression Body introduced?
+		Many functions only return a single expression.
+		
+		Instead of writing :	return expression
+		we simply write    :	= expression
+		
+		This reduces Boilerplate Code.
+		
+--> Lambda Expressions
+
+	A Lambda is an Anonymous Function.
+
+	Anonymous means :	The function has no name.
+
+	Normal Function :
+		fun greet() {
+			println("Hello")
+		}
+
+	Lambda :
+		{
+			println("Hello")
+		}
+
+	Notice :	The Lambda has no function name.
+	
+--> Why do we need Lambdas?
+
+	Sometimes we need a small piece of code only once.Instead of creating a separate function, we create a Lambda.
+	
+	Example :
+		Button(
+			onClick = {
+				println("Clicked")
+			}
+		)
+		
+--> Lambda Syntax
+
+	Lambda without Parameters :
+		{
+		}
+
+	Lambda with Parameters :
+		{ value ->
+			println(value)
+		}
+
+	The arrow ( -> ) separates :
+		Parameters
+			 ↓
+		Implementation
+		
+--> Higher Order Functions
+
+	A Higher Order Function is a Function that :
+
+		• Accepts another Function as a Parameter.
+				OR
+		• Returns another Function.
+
+	Compose mainly uses the first one.
+	
+	Example :
+		fun execute(task: () -> Unit) {
+		}
+		task itself is another Function.So execute() is a Higher Order Function.
+		
+--> Why are Higher Order Functions useful?	
+		Instead of deciding what work should be done, the function allows the caller to decide.
+		Example :
+			execute(
+				{
+					println("Hello")
+				}
+			)
+		The behaviour changes depending on the Lambda passed by the caller.
+		
+--> Compose uses Higher Order Functions everywhere
+	Example : 
+		application {...}, 	Window {...}, Button {...}, MaterialTheme {...}, Column {...}
+		All of these functions accept another Function (Lambda).
+		
+--> Trailing Lambda Syntax
+		If the LAST parameter of a function is a Lambda, Kotlin allows moving it outside the parentheses.
+		Instead of :
+			execute(
+				{
+				}
+			)
+		we can write :
+			execute {
+			}
+		This is called Trailing Lambda Syntax.
+		
+--> Why was Trailing Lambda introduced?
+		
+		Without Trailing Lambda :
+			Button(
+				modifier = Modifier,
+				content = {
+				}
+			)
+
+		With Trailing Lambda :
+			Button(
+				modifier = Modifier
+			) {
+			}
+
+		It makes the code much easier to read.
+		
+--> Function References (::)
+
+	Sometimes we don't want to execute a function immediately.Instead,we want to pass the Function itself.
+	Kotlin provides Function References using ::
+	
+	Example
+
+		Function :
+			fun closeApplication() {
+				println("Closing")
+			}
+
+			Calling the Function :	closeApplication()	The function executes immediately.
+
+		Function Reference :
+			Instead of executing it,we pass the Function itself.
+				::closeApplication			//There are no parentheses.
+			
+			Meaning : Pass the Function.Do NOT execute it now.
+			
+	--> Real Compose Example
+			Window(
+				onCloseRequest = ::exitApplication
+			)
+			
+			Meaning :
+				User Clicks Close Button	->	Compose calls	->	exitApplication()
+	
+************************************************** CHAPTER 7 — Compose Architecture ***********************************************
+
+--> application()
+	application() is a Function provided by Compose Multiplatform.
+	It is the Entry Point into the Compose Framework.
+	Example :
+		fun main() = application {
+		}
+	This is equivalent to :
+		fun main(): Unit {
+			return application {
+			}
+		}
+	
+	When Windows(OS) starts our application, execution begins at : fun main(...) 
+		At this point : Process exists ✅ | main() is running ✅ | No window exists yet ✅
+	
+	So Who is responsible for starting the Compose environment?			-	Compose Multiplatform	
+	It cannot be : Windows OS | Kotlin | JVM
+		
+		
+	1 -  
+		fun main(args: Array<String>)
+		Meaning:
+			Function Name → main	|	Parameter → args	|	Return Type → Unit (implicit)
+		Equivalent to :
+			fun main(args: Array<String>): Unit
+	
+	2 — Expression Body (=)
+		means:
+			fun main(args: Array<String>): Unit {
+				return application {
+
+				}
+			}
+		because in Kotlin :
+			fun add(a: Int, b: Int): Int {
+				return a + b
+			}
+			fun add(a: Int, b: Int): Int = a + b						//Expression Body Functions
+
+		
+	3 — Why application { } ?
+		Conceptually :
+			fun application(
+				content: () -> Unit
+			)
+
+		application() accepts a Function as its parameter.
+		So application() is a Higher Order Function.
+	
+	5 — Trailing Lambda
+		application {
+			// Your code				//The lambda[code inside {} ] contains the code that Compose will execute AFTER it initializes the Compose Runtime.
+		}
+
+	Responsibility : 
+		application()
+			↓
+		Initialize Compose Runtime
+			↓
+		Prepare Compose Environment
+			↓
+		Execute the Lambda
+
+
+--> Window()
+	Window() is a function provided by Compose Multiplatform.
+	It is also a Higher Order Function because its LAST parameter is a Lambda.
+	
+	Example :
+		Window(
+			onCloseRequest = app::onDestroy,
+			title = "ATEK GATE",
+			state = rememberWindowState(
+				placement = WindowPlacement.Fullscreen
+			)
+		) {
+			App(app)
+		}
+	
+	--> Responsibility
+		Window()
+			↓
+		Request the Operating System
+			↓
+		Create a Native Desktop Window
+	
+	--> Who Actually Creates the Window?
+		Compose DOES NOT create the Window. Windows Operating System creates the actual window.
+		Window() only requests the Operating System to create it.
+		
+	--> Why Does Window() Accept a Lambda?
+		Compose creates only the native window.
+		It doesn't know what UI should appear inside that window.
+		So we pass a Lambda describing the UI.
+
+		Example :
+			Window {
+				App(app)
+			}
+
+		This means : Display App(app) inside this Window.
+	
+	Note :
+		Window = Native Desktop Window (Container)
+		The Lambda passed to Window() describes the UI that should be displayed inside that Window.
+
+
+--> Scene()
+	Scene is an internal architectural concept of Compose.
+
+	After the Native Window is created,
+	Compose creates an area where it can manage and render the UI.
+
+	That area is called a Scene.
+	
+	EXAMPLE: 
+		+-----------------+
+		| ATEK GATE  X    |
+		+-----------------+
+		| +-----------+   |
+		| |           |   |
+		| |    Scene  |   |
+		| +-----------+   |
+		+-----------------+
+ 
+	--> What lives inside the Scene?
+		App()	|	MainScreen()	|	Buttons() |  Text()  |  Images
+		
+	--> Why do we need Scene?
+		Without Scene,
+		Compose would have to draw directly on the Native Window.
+		This would tightly couple :
+
+		Window Management
+				AND
+		UI Rendering
+		
+		Scene separates these responsibilities.
+	
+	Responsible for  : 	Render and manage the Compose UI inside the Native Window.
+	
+--> Composition
+	Scene is initially empty.
+	Compose builds the complete UI inside the Scene.
+	This process is called Composition.
+	
+	Example :
+		Login Screen
+		├── Title
+		├── Username TextField
+		├── Password TextField
+		└── Login Button
+
+	Compose combines these small UI pieces into one complete UI.
+	This combining process is called Composition.
+
+	Composition means :
+		Building the UI structure.
+		It does NOT mean drawing pixels on the screen.
+	
+--> Composable
+	A Composable is a Function that describes a piece of UI.
+	It is marked using :
+		@Composable
+		
+	Example :
+
+		@Composable				@Composable					@Composable
+		fun Header() { }		fun Body() { }				fun Footer() { }
+
+		@Composable
+		fun MainScreen() {
+			Header()
+			Body()
+			Footer()
+		}
+		Compose combines these Composable Functions during Composition.
+		
+		Responsibility :
+			Describe a reusable piece of UI that can participate in Composition.
+
+
+--> State	
+	State is the current data (current value) that determines what the UI should display.
+		Example :	var count = 0
+
+	Current State :	count = 0
+	After 		  :	count++
+
+	New State :	count = 1
+	
+	--> Why Is State Important?
+		Compose follows Declarative UI.
+		The Developer changes the State.
+		Compose detects the State change and updates the UI automatically.
+
+	--> State vs UI
+		
+		State ≠ UI
+
+		State	→	Data
+		UI		→	Display of the current State
+
+	Example :
+		count = 5		→		Counter : 5
+		count = 6		→		Counter : 6
+			
+			
+	Flow :
+		State Changes
+			↓
+		Compose Detects State Change
+			↓
+		Compose Updates UI	
+
+--> Recomposition
+	Recomposition is the process of re-executing only the affected Composable functions after a State change.
+	Compose does NOT rebuild the entire UI.
+	It updates only the affected Composables
+	
+	Flow :
+			State Changes
+			↓
+			Compose Detects State Change
+			↓
+			Recomposition
+			↓
+			Affected Composable Functions Execute Again
+			↓
+			Updated UI
+			
+************************************************** Desktop Application Startup  Flow ************************************************** 
+
+	Windows OS		-->		Loads EXE		-->		Creates Process		-->		Starts JVM		-->		JVM Executes main()		-->		application()		-->		Compose Runtime Initializes		-->		application()
+																																																				|
+																																																				|
+																																																				↓
+	Composition		<--		Scene Created		<--		Windows OS creates Native Desktop Window		<--		Window()		<--		application() executes its Lambda		<--		Compose Runtime Starts
+		|
+		|
+		↓
+	Composable Functions Execute		-->		UI Rendered		-->		User Interaction		-->		State Changes		-->		Compose Detects State Change
+																																		|
+																																		|
+																																		↓
+										Updated UI		<--		Only Affected Composable Functions Execute Again		<--		Recomposition	
+	
+	
+############################################### MODULE 2 : COMPOSE FUNDAMENTALS ##########################################################
+
+--> What is an Annotation?	
+	An annotation is metadata[Data about Data].Read by Compiler / Framework / Tools
+	It provides extra information about a program element.	It does NOT change the actual code.
+	An annotation is not executable code.It is information attached to something.
+	
+		Example :
+		
+			@Composable
+			fun App() {
+			}
+			The function is still a normal Kotlin function.	
+			The annotation only provides additional information.
+	
+	--> Why do we need Annotations?
+
+		Without Annotations,
+		the Compiler or Framework would not know that something requires special processing.
+		Annotations allow us to mark code with additional information.
+	
+	--> Who Reads The Annotation?
+		• Kotlin Compiler	|	• Compose Compiler Plugin	|	• Compose Runtime	|	• IntelliJ IDEA		|	• Android Studio	|	• Libraries
+		
+	--> Is Annotation Executable Code?
+		NO.
+		An Annotation is NOT executable code.
+		It is only additional information attached to a program element.
+		
+	--> Is Annotation A Kotlin Feature?
+	
+		YES.
+		Annotations are a built-in Kotlin language feature.
+		
+		We can even create our own Annotation.
+		Example :
+
+			annotation class MyAnnotation
+
+		Usage :
+			@MyAnnotation
+			fun greet() {
+
+			}
+	--> Common Kotlin / Compose Annotations
+
+	Examples :
+		@Composable	|		@Preview	|		@Deprecated	|		@Suppress	|		@Test
+
+	Every Annotation has a specific purpose.		
+
+	
+--> @Composable
+	
+	@Composable is a Compose Annotation.
+	It marks a Function as a Function that describes UI.
+	Example :
+		@Composable
+		fun App() {
+
+		}
+	The function is still a normal Kotlin Function.
+
+	The Annotation tells Compose :
+		"This Function describes UI and can participate in Composition."
+	
+
+	--> Why do we need @Composable?
+		Without @Composable, Compose treats the Function as a normal Kotlin Function.It cannot participate in Composition.
+		Compose does NOT recognize it as UI.
+
+	--> What happens after adding @Composable?
+		Compose Compiler Plugin recognizes the Annotation.
+		Flow :
+			@Composable	->	Compose Compiler Plugin	->	Transforms the Function	->	Kotlin Compiler	->	Bytecode (.class)	->	JVM Executes	->	Compose Runtime uses it during Composition
+	
+	--> Is @Composable executable code?
+			NO.Like every Annotation,@Composable is only Metadata.It simply provides additional information.
+	
+	--> Who reads @Composable?
+		@Composable is mainly read by the Compose Compiler Plugin.
+		It tells the Compiler :
+			"This Function belongs to the Compose UI System."
+	
+	Important rules:
+		A Composable function can call another Composable function.
+		A normal Kotlin function cannot directly call a Composable function.
+		@Composable is read by the Compose compiler/plugin to treat the function as part of the Compose UI system.
+				
+--> @Preview
+	
+	@Preview is a Compose Annotation
+	It tells the IDE to render a preview of a Composable without running the entire application.
+	Example :
+		@Preview
+		@Composable
+		fun LoginScreen() {
+
+		}
+
+--> Modifier
+	A Modifier is an object that describes how a UI Component should look or behave.
+	It does NOT create UI.
+	It modifies existing UI.
+	
+	Example : 
+		Button(
+			modifier = Modifier
+		)
+	
+	Meaning :
+		Create Button
+				↓
+		Apply Modifier
+		We can use it like :
+			Modifier
+				.padding(...)					//Add padding.
+				.background(...)				//Draw a background.
+				.fillMaxSize()					//Occupy all available space.
+				
+	--> Why Modifier?
+
+	Instead of giving every UI Component dozens of parameters,
+	Compose groups common UI modifications into one object called Modifier.
+	
+	--> Method Chaining
+		Each function returns another Modifier, allowing the next function to be chained.
+	
+		Example :
+			Modifier
+				.padding(...)
+				.background(...)
+				.fillMaxSize()
+				
+		Conceptually :
+			Modifier means Start with an empty Modifier.
+			Then :  
+				Modifier.padding(16.dp)	
+					means : Create a new Modifier that includes padding.
+			Then:
+				Modifier
+					.padding(16.dp)
+					.fillMaxSize()
+					
+					means Take the previous Modifier and add another modification.
+					
+					
+--> MaterialTheme
+
+	MaterialTheme is a Composable provided by Compose.
+	It provides a common UI style for all Composables inside it.
+	
+	--> Purpose
+		Apply a common Theme to the application.
+		Examples :	• Colors	|	• Typography (Fonts)	|	• Shapes
+		
+	--> Example
+			MaterialTheme {
+				App()
+			}
+		Meaning :	Apply the Theme to everything inside App().
+		
+	--> Why MaterialTheme?
+		Without MaterialTheme, every UI Component would need its own styling.
+		Example :
+			Button 1 → Color
+			Button 2 → Color
+			Button 3 → Color
+		Instead, define the Theme once and reuse it everywhere.
+			
+	--> Is MaterialTheme Mandatory?	
+		NO. It is optional.
+		However, almost every Compose application uses MaterialTheme because it provides a consistent look and feel.
+		
+		
+****************************************************************** State Management ******************************************************************
+--> Compose follows Declarative UI.
+
+	The Developer changes the State.
+				↓
+	Compose automatically updates the UI.
+
+	State Management in Compose mainly consists of :
+		• mutableStateOf()	|	• remember()|	• by (Property Delegation)
+
+	These work together to manage and update UI State.	
+
+********************************* mutableStateOf()) *********************************	
+--> mutableStateOf()				- it notify when something change then Recomposition happen and compose get new value
+	
+	Creates a State Object with an initial value.
+	Example :
+		mutableStateOf(0)
+	
+	--> Purpose
+		Create a State Object that can notify Compose when its value changes.		.
+		A normal Int is just a value and cannot notify Compose.
+
+	--> Why not use a normal variable?
+		
+		Normal Variable :
+			var count = 0
+			count++
+		Compose does NOT know the value changed.
+		
+		------------------------------------------------
+
+		State Object : 
+			val count = mutableStateOf(0)
+			count.value++
+		Compose is notified automatically.
+
+	--> Accessing the Value
+		
+		mutableStateOf() returns a State Object.
+
+		Read Value   : count.value
+
+		Update Value : count.value++
+		
+********************************* remember() *********************************
+--> remember()
+	remember() stores an Object and returns the same Object during every Recomposition.	
+		
+	--> Why do we need remember()?
+
+		Without remember()
+		
+			@Composable
+			fun Counter() {
+				val count = mutableStateOf(0)
+			}
+			
+		During every Recomposition, a NEW State Object is created.
+		The previous State Object is lost.
+
+	Solution : remember
+		@Composable
+		fun Counter() {
+
+			val count = remember {
+				mutableStateOf(0)
+			}
+		}
+	remember() creates the State Object only once.
+	After that, it always returns the SAME Object.
+
+	--> What does remember() remember?
+
+		remember() remembers the object returned by its lambda.
+			Example :
+				remember {
+					mutableStateOf(0)
+				}
+			The lambda returns a State Object.
+			So remember() remembers the State Object, not the integer value.
+
+********************************* remember() + mutableStateOf() *********************************
+--> Why are they used together?
+		mutableStateOf()	->	Creates State Object
+		remember()			->	Keeps the same State Object across Recompositions
+
+--> Responsibilities :
+
+	mutableStateOf()
+		↓
+	Create State Object
+		↓
+	Notify Compose when Value Changes
+
+	------------------------------------------------
+
+	remember()
+		↓
+	Store the State Object
+		↓
+	Return the Same Object during every Recomposition			
+	
+	
+********************************* by (Property Delegation) *********************************
+--> Without by :
+		val count = remember {
+			mutableStateOf(0)
+		}
+		Read	→	count.value
+		Update	→	count.value++
+		
+--> With by :
+		var count by remember {
+			mutableStateOf(0)
+		}
+	Read	→	count
+	Update	→	count++
+
+	--> Purpose
+		by automatically accesses .value.
+		It makes the code shorter and easier to read.
+		
+	Note : 
+		Use val when working without "by"
+		Use var when using by because the value itself changes.
+
+********************************* rememberWindowState() *********************************
+
+--> rememberWindowState()
+	rememberWindowState() creates and remembers a WindowState Object.
+	
+--> Why do we need WindowState?
+	
+	A native window has properties like :
+		• Width	|	• Height	|	• Position	|	• Placement (Normal / Maximized / Fullscreen)
+
+	Compose stores these properties inside a WindowState Object.
+
+--> Important
+	WindowState ≠ Native Window
+	WindowState only stores the Window's State.
+	It does NOT create the Native Window.
+		
+--> Why rememberWindowState()?
+	Without rememberWindowState(),
+	a new WindowState Object would be created during every Recomposition.
+	The previous WindowState would be lost.
+	
+	
+--> Solution
+
+	rememberWindowState()
+			↓
+	Create WindowState once
+			↓
+	Remember the same WindowState across Recompositions
+	
+	Example :
+		Window(
+			state = rememberWindowState(
+				placement = WindowPlacement.Fullscreen
+			)
+		) { ... }
+
+	Meaning :
+		Create one WindowState object
+				↓
+		Initial Placement = Fullscreen
+				↓
+		Remember the same WindowState object across Recompositions.
+		
+--> Why not use remember { WindowState() }?
+
+	Because creating and remembering WindowState is a very common requirement.
+	Compose provides a helper function :	rememberWindowState()
+		
+		
+********************************* Window() Parameters *********************************
+Example :
+	Window(
+		onCloseRequest = ::exitApplication,
+		title = "ATEK GATE",
+		state = rememberWindowState()
+	) {
+
+	}
+
+	1. onCloseRequest
+		Example : 
+			Window(onCloseRequest = ::exitApplication) {
+			}
+		Purpose :
+			Called when the user clicks the Close (X) button.
+		Example :
+			onCloseRequest = ::exitApplication
+		
+		::exitApplication means passes a reference (address) to the function.If we pass like onCloseRequest = exitApplication() then function retur immediately
+		
+		We can alse be :
+			onCloseRequest = {
+				saveData()
+				exitApplication()
+			}
+			
+	2. title
+		Example : 
+			Window(
+				title = "ATEK GATE"
+			)
+		Purpose : Sets the Window Title.
+		Example : title = "ATEK GATE"
+
+	3. state
+		Example :
+			Window(
+				state = rememberWindowState(
+					placement = WindowPlacement.Fullscreen
+				)
+			)
+		Purpose : Passes the WindowState Object to Window().
+		Example : state = rememberWindowState()
+
+	4. icon
+		Example :
+			Window(
+				icon = painterResource(...)
+			)
+		Sets the application's icon.
+		
+	5. resizable
+		Example :
+			Window(
+				resizable = false
+			)
+		The user cannot resize the window.Default : true
+	
+	6. undecorated
+		Example :
+			Window(
+				undecorated = true
+			)
+		Remove the operating system decorations.
+	
+	7. transparent
+		Example :
+			Window(
+				transparent = true
+			)
+		Allows transparent windows.
+			
+	8. alwaysOnTop
+		Example
+			Window(
+				alwaysOnTop = true
+			)
+		The window always stays above other windows.
+		
+--> application() Parameters
+	Example :
+		fun main() = application {
+		}
+	Conceptually :
+
+		application(
+			exitProcessOnExit : Boolean = true,
+			content : ApplicationScope.() -> Unit
+		)
+	application() is a Higher Order Function. It initializes the Compose Runtime. It executes the lambda after initialization.
+
+	1. content (Lambda)
+		Purpose : The Lambda executed after Compose Runtime initialization.
+		Example:
+			application {
+				Window {
+					App()
+				}
+			}
+		This is the code Compose executes after the Compose Runtime has been initialized.
+	
+	2. exitProcessOnExit
+		Purpose : Controls whether the JVM Process exits when the application closes.
+		Example:
+			application(
+				exitProcessOnExit = true
+			) {
+			}
+		Default :   true
+
+
+############################################ MODULE 3 : BUILD A COMPOSE MULTIPLATFORM PROJECT ############################################
+
+************************************************** Chapter 1 — Development Environment **************************************************
+
+--> Project Flow :
+	Developer		->		IntelliJ IDEA		->		Gradle		->		Compose Compiler Plugin		->		Kotlin Compiler		->		.class Files	->		JVM		->		Compose Runtime		->		Operating System		->		Application Running
+
+--> IntelliJ IDEA
+	IntelliJ IDEA is an Integrated Development Environment (IDE) developed by JetBrains.
+	It provides everything required to develop Kotlin and Compose applications.
+	
+	Responsibilities : Write code | Auto-completion | Debugging | Run Gradle | Manage projects | Run Application
+	
+	--> Does IntelliJ compile our code?
+
+		NO.
+		IntelliJ only starts the Build Process.
+		The actual compilation is performed by Gradle and the Kotlin Compiler.
+
+--> JDK[Java Development Kit]
+	JDK stands for Java Development Kit.It provides the tools required to develop Java and Kotlin applications.
+
+		
+	--> JDK Contains : JVM | JRE | Java Compiler (javac) | Java Libraries | Debugging Tools | Development Tools
+		
+	--> Why do Kotlin applications need JDK?
+		Kotlin JVM applications ultimately run on the JVM. Therefore, the JDK is required to compile and run Kotlin code.
+		
+	Flow :
+		Kotlin Code		->		Kotlin Compiler		->		.class		->		JVM (provided by the JDK)		->		Program Executes
+	
+--> JDK vs JRE vs JVM 	
+		
+	--> JVM (Java Virtual Machine)
+
+		Purpose : Execute Java Bytecode.
+
+		It does NOT compile code.It only runs compiled Bytecode.	
+	
+	--> JRE (Java Runtime Environment)
+	
+		Purpose : Provide everything required to RUN Java Applications.
+		JRE Contains : 	• JVM | • Java Libraries
+	
+	--> JDK (Java Development Kit)
+		
+		Purpose : Develop Java/Kotlin Applications.
+		JDK Contains :	• JRE |	• JVM | • Compiler | • Development Tools
+		
+--> Gradle 	
+	
+	Gradle is an Automation and Build Tool.It automates the process of building the project.
+	
+	--> Responsibilities
+		Gradle
+			↓
+		Download Dependencies
+			↓
+		Compile Source Code
+			↓
+		Run Compose Compiler
+			↓
+		Create Build Files
+			↓
+		Run Application
+	
+	--> Why do we need Gradle?
+
+		Without Gradle, we would have to manually :
+
+			• Download Libraries
+			• Configure Compiler
+			• Compile Source Code
+			• Package the Application
+			• Run the Application
+
+		Gradle automates all these tasks.
+		
+	--> Project Files	:	
+		Common Gradle Files :	settings.gradle.kts	|	build.gradle.kts	|	gradle.properties
+		
+		--> build.gradle.kts
+			It contains : 	• Plugins | • Dependencies | 	• Project Configuration | • Build Configuration
+	
+		--> settings.gradle.kts
+			It defines : • Project Name | • Included Modules
+		
+		--> gradle.properties
+			It stores Gradle configuration.
+			Example :
+				• JVM Arguments | • Build Properties
+					
+--> Kotlin Compiler 
+
+	The Kotlin Compiler does NOT execute the application.It only converts the source code into Bytecode.
+	
+	Input  : Kotlin Source Files (.kt)
+	Output : JVM Bytecode (.class)
+	
+	--> Flow
+		Kotlin Source Code
+				↓
+		Kotlin Compiler
+				↓
+		JVM Bytecode (.class)
+	
+--> Compose Compiler Plugin 
+
+	The Compose Compiler Plugin extends the Kotlin Compiler.It teaches the Kotlin Compiler how to understand Compose-specific code.
+	Works at : Compile Time
+
+	Purpose :
+
+		Recognize @Composable
+				↓
+		Transform Compose code into normal Kotlin code
+				↓
+		Pass it to the Kotlin Compiler
+	
+--> Compose Multiplatform Plugin 
+	
+	It is a Gradle Plugin.It configures the project for Compose Multiplatform development.
+
+	--> Responsibilities
+		• Configure Compose Project | • Add Compose Dependencies | • Configure Desktop Target | • Configure Android Target (if present) | • Configure Build Tasks
+			
+--> Compose Runtime 	
+	
+	It starts after the JVM starts the application.
+	Compose Runtime is the library responsible for running Compose applications.
+	
+	Compose Compiler Plugin	Works at : Compile Time
+	Compose Runtime	Works at 		 : Run Time
+	
+	Responsibilities : • Execute Composable Functions	|	• Manage Composition	|		• Manage State	|	• Detect State Changes	|	• Perform Recomposition
+	
+	--> Without Compose Runtime
+	Even if the project compiles successfully, the application cannot display Compose UI.
+		
+--> Dependency 
+
+	A Dependency is an external Library or Framework that our project requires to work.
+	Instead of writing everything ourselves, we reuse existing libraries.
+	Examples :	Compose UI | Coroutines | Serialization | SQLite | Ktor
+
+	--> Where are Dependencies added?
+		In Gradle.
+		Example :
+			dependencies {
+				implementation(...)
+			}
+		implementation tells Gradle : "This project depends on this library."
+
+--> How Everything Connects 
+	Developer		->		IntelliJ IDEA		->		Gradle		->		Compose Multiplatform Plugin		->		Compose Compiler Plugin		->		Kotlin Compiler		->		Bytecode (.class)	->		JVM		->		Compose Runtime		->		Operating System		->		Application Running
+		
+	
+******************************************** Chapter 2 - Project Creation ********************************************
+******************************** Method 1 - Official Project Creation ********************************
+Our Environment :
+	JDK            → 11
+	Platform       → Linux ARM64
+	Language       → Kotlin Multiplatform
+	UI             → Compose Multiplatform
+	Build System   → Gradle
+
+--> Current Project Creation Methods
+
+	There are two ways to create a Compose Multiplatform Project.
+
+		Method 1	:	Official Project Generator
+		Method 2	:	Manual Project Creation
+
+	Both create the same type of project.
+
+	The difference is only who creates the project structure.
+
+		Official Project Generator	:	Project generated automatically.
+
+		Manual Project Creation		:	Developer creates every file manually.
+
+
+--> Official Project Generator
+
+	The Official Project Generator creates a ready-to-use Compose Multiplatform project.
+	It automatically generates :	Project Structure	|	Gradle Configuration	|	Source Structure	|	Sample Application	|	Build Configuration
+
+--> Why did the Compose Project Wizard change?
+		Earlier, IntelliJ IDEA contained a built-in Compose Project Wizard.
+		Later, JetBrains moved project generation to the official website.
+		Reason : Project Templates change frequently.
+			Keeping templates on the website allows JetBrains to update them without waiting for a new IntelliJ release.
+
+	Website :	https://kmp.jetbrains.com/
+
+    Project Name :	Human-readable name of the project/folder.
+        Example  :	ComposeLearning
+
+    Project ID   :	Unique identifier of the project.
+        Example  :  com.atek.composelearning
+		
+		
+--> Generated Project Structure
+	The official generator creates a Multi-Module project.
+    Example :
+        ComposeLearning
+			│
+			├── androidApp
+			├── desktopApp
+			├── shared
+			├── build.gradle.kts
+			├── settings.gradle.kts
+			├── gradle.properties
+			├── gradlew
+			├── gradlew.bat
+			└── gradle
+	
+	--> Why Multi-Module?
+		Compose Multiplatform separates the project into multiple modules.
+		
+		androidApp		-	Android-specific code
+		desktopApp		-	Desktop-specific code
+		shared			-	Common code shared by all platforms.
+	
+	--> Opening the Project
+		After opening the project,
+			IntelliJ detects that it is a Gradle Project.
+					↓
+			Starts Gradle Sync
+			
+	--> Gradle Sync	
+		Gradle Sync performs the following tasks :
+
+			Read settings.gradle.kts
+					↓
+			Read build.gradle.kts
+					↓
+			Load Plugins
+					↓
+			Resolve Dependencies
+					↓
+			Download Missing Libraries
+					↓
+			Configure IntelliJ Project
+					↓
+			Project Ready
+			
+	--> Why is Gradle Sync required?
+			Without Gradle Sync, IntelliJ does not know :	Dependencies	|	Plugins		|	Source Folders		|		Build Tasks
+
+	--> During Gradle Sync
+			Gradle	->	Read settings.gradle.kts	->	Read build.gradle.kts	->	Load Plugins	->	Resolve Dependencies	->	Download Missing Libraries	->	Configure Project	->	IntelliJ Project Ready
+	
+	--> Run Generated Project
+
+		Click Run	->	IntelliJ IDEA	->	Gradle	->	Kotlin Compiler	->	Compose Compiler Plugin	->	Bytecode (.class)	->	JVM	->	Compose Runtime	->	Application Starts
+	
+	
+******************************** Method 2 — Manual Project Creation ********************************			
+--> Step 1 : Create Empty Folder
+
+	Create an Empty Folder.It is just a normal folder.IntelliJ does NOT recognize it as a Gradle project because no Gradle files exist.
+		Example :	ComposeLearning/
+
+--> Step 2 : Create settings.gradle.kts
+	settings.gradle.kts is the first Gradle file read by Gradle.
+	Gradle must know : "What project am I building?" . It gets this information from settings.gradle.kts.
+	
+	Purpose : Define Project Name	|	Configure Plugin Management
+	
+	Example: rootProject.name = "ComposeLearning"
+	
+	Responsibilities :	Defines the project name.	|	Tells Gradle this is a Gradle project.	|	Configures Plugin Management 	|	Configures Plugin Versions	
+		
+	-->	rootProject.name = "AtekGate"
+		Define the project Name
+	
+	--> pluginManagement
+		Purpose  : Tell Gradle where Plugins are downloaded from.
+			Example :
+				pluginManagement {
+					repositories {
+					}
+
+					plugins {
+					}
+				}
+
+		Contains :
+			1. Plugin Repositories	:	Where Gradle downloads plugins from.
+				Example :
+					google()
+					gradlePluginPortal()
+					mavenCentral()
+
+			2. Plugin Versions
+				Example :
+					kotlin("multiplatform").version(extra["kotlin.version"] as String)
+
+				Meaning :	Plugin Name +	Plugin Version
+	Concepts Learned :
+
+        • rootProject.name	:	Defines the project name.
+        • pluginManagement	:	Repository for downloading Plugins.
+        • dependencyResolutionManagement	:	Defines where Gradle downloads Libraries.
+        • include(...)	:	Defines project modules.
+		
+--> Step 3 : Create build.gradle.kts
+
+    Purpose :	build.gradle.kts tells Gradle how to build the project.
+	
+	--> Responsibilities : Load Plugins | Configure Repositories | Configure Kotlin | Configure Compose	|	Configure Build
+
+	--> Typical Structure	
+			build.gradle.kts
+				├── plugins
+				├── group
+				├── version
+				├── repositories
+				├── kotlin
+				└── compose.desktop
+	
+	--> plugins { }	
+			Purpose  :	Load Gradle Plugins.
+			Examples : Kotlin Plugin | Compose Multiplatform Plugin
+			
+		Example :
+			plugins {
+				kotlin("multiplatform")
+				id("org.jetbrains.compose")
+			}
+
+		Meaning :	Load the required Gradle plugins.
+		
+	--> group
+		Purpose :	Identifies the owner/company of the project.
+		Example :
+			group = "com.atek"
+
+	--> version
+		Purpose :	Defines the project version.SNAPSHOT means the project is still under development.
+		Example :
+			version = "1.0-SNAPSHOT"
+	
+	--> repositories { }		
+			Purpose  :	Tell Gradle where libraries can be downloaded from.
+			Examples :	Maven Central	|	Google	|	JetBrains Compose Repository
+			
+			Example :
+			   repositories {
+					google()
+					mavenCentral()
+					maven("https://jitpack.io")
+					maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+				}
+
+			Difference :  "settings.gradle.kts"		AND  	"build.gradle.kts"
+
+				settings.gradle.kts	:	 repositories	   →	 Download Plugins
+				build.gradle.kts	:	 repositories	   →	 Download Application Libraries
+
+			
+	--> kotlin {
+			Purpose :	Configure the Kotlin Multiplatform Plugin.
+
+	--> jvm
+		Example :
+			jvm {
+					jvmToolchain(11)
+					withJava()
+				}
+			
+			Purpose :	Configure the JVM target.
+			
+			--> jvmToolchain(11)
+					Purpose :  Compile the project using JDK 11.
+
+			--> withJava()
+					Purpose :	Allow Java source files to exist together with Kotlin source files.
+					
+	--> sourceSets
+
+		Purpose :	Organize source code according to platform and purpose.
+
+		--> val jvmMain by getting { }        →		Main application source code.
+		--> val jvmTest by getting { }        →		Test source code.
+		
+			--> dependencies { }
+				Purpose :	Add Libraries required by a Source Set.
+					Example :
+						   implementation(...)
+						   
+	--> compose.desktop { }
+			Purpose :	Configure the Desktop Application.
+		Example 1:
+			compose.desktop {
+				application {
+					mainClass = "MainKt"
+				}
+			}
+
+		--> application {
+				Purpose :	Configure how Gradle starts the application.
+				
+		--> mainClass
+				Example :	mainClass = "MainKt"
+				Meaning :	Start execution from MainKt.main()
+				
+	--> Compose Runtime
+
+			Dependency :	implementation(compose.desktop.currentOs)
+
+			Purpose    :	Include the Compose Runtime library inside the application.
+
+			During Development :	
+				compose.desktop.currentOs	→	 Automatically selects the runtime for the current operating system.
+
+			Production :	compose.desktop.linux_arm64	 →	Always packages Linux ARM64 Compose Runtime.
+		
+			
+--> Step 4 : Create gradle.properties
+	Purpose  :	Store project-wide Gradle configuration values.
+	Examples :	JVM Arguments	|	Build Properties	|	Performance Settings
+
+	Example :	kotlin.version=1.8.0	|	compose.version=1.3.0
+
+	Meaning :
+		Instead of writing everywhere :	version("1.8.0")
+
+		define it once : kotlin.version = 1.8.0	and use it from anywhere.
+	
+--> Step 5 : Add Gradle Wrapper
+	
+	Files :
+		gradlew		:	Linux / macOS launcher.
+		gradlew.bat	:	Windows launcher.
+		gradle/		:	Contains the Gradle Wrapper configuration.
+
+	Purpose :	Every developer uses the same Gradle version without installing Gradle manually.
+
+	Flow :
+		gradlew / gradlew.bat
+				↓
+		gradle-wrapper.jar
+				↓
+		gradle-wrapper.properties
+				↓
+		Download Gradle (if required)
+				↓
+		Start Gradle	
+
+	--> Gradle Execution Flow
+
+			Gradle Starts
+					↓
+			Read settings.gradle.kts
+					↓
+			Get Plugin Versions
+			Get Plugin Repositories
+					↓
+			Download Plugins
+					↓
+			Read build.gradle.kts
+					↓
+			Load Plugins
+					↓
+			Read Library Repositories
+					↓
+			Download Dependencies
+					↓
+			Configure Plugins
+					↓
+			Compile
+					↓
+			Run
+	
+	
+--> Version Catalog (libs.versions.toml)
+
+    Purpose :	
+		Central place to manage :	Plugin Versions	|	Library Versions	|	Version Numbers
+
+    Sections :
+        [versions]	:	Stores version numbers.
+        [libraries]	:	Stores library definitions.
+        [plugins]	:	Stores plugin definitions.
+
+--> Link Gradle Project
+		When IntelliJ detects build.gradle.kts
+			↓
+		Link Gradle Project
+				↓
+		Gradle Sync
+				↓
+		Project Ready
+
+--> First Compose Application
+		Main.kt
+			↓
+		application()
+			↓
+		Window()
+			↓
+		Text()
+
+	Result : Successfully created and ran the first Compose Desktop application.	
+	
+******************************** Gradle Fundamentals ********************************	
+--> Gradle Import & Build Flow
+
+	When IntelliJ shows	:	Link Gradle Project		and we click it,
+
+	Flow :	IntelliJ	->	gradlew / gradlew.bat	->	Read settings.gradle.kts	->	Get Plugin Versions		->		Get Plugin Repositories		->		Download Plugins
+																																								|
+																																								|
+																																								|
+					Configure Kotlin Plugin		<-	  Download Libraries	<-	   Read Library Repositories 	<-	  Load Plugins 		<-	  Read build.gradle.kts
+						|
+						|
+						|
+			Configure Compose Plugin
+						|
+						|->		Build Project		->		Compile Kotlin		->		 Generate .class		->	Package Application		->	Run
+						|	
+						|->		Import Project 
+
+--> Application Packaging
+	
+	Flow 					 : 	Main.kt		->		Kotlin Compiler		->		.class files	->		Gradle Packages Everything		->		Application.jar
+
+	Application.jar Contains : .class files	|	Compose Runtime	|	Kotlin Runtime	|	Other Libraries
+
+
+--> Runtime Execution
+
+	Flow :	java -jar Application.jar	->	JVM Starts		->	Loads .class files		->		main()		->		application()		->		Compose Runtime		->		Window()		->		Application Running
+
+
+	Whenever application(), Window(), Button(), Text(), remember() etc. are called,the JVM executes the implementation provided by the Compose Runtime.
+	Whenever Kotlin standard library features are used, the JVM executes the implementation provided by the Kotlin Runtime.
+
+
+--> Gradle Tasks
+
+	Task :	A single unit of work that Gradle knows how to perform.
+		Examples :
+			compileKotlin		:	Compiles Kotlin source files.
+			processResources	:	Processes resource files.
+			jar					:	Creates the JAR file.
+			run					:	Starts the application.
+			clean				:	Deletes the build directory.
+
+
+	--> Task Dependency
+		A Gradle task can depend on one or more other tasks.
+
+		Example :	Run	->	Build	->	Compile Kotlin	->	Download Dependencies
+		Meaning :	When we request a task (Example : Run), Gradle automatically executes every required dependent task before executing the requested task.
+
+
+	--> Responsibility
+		Each Gradle task has a single responsibility.
+			Examples :
+				compileKotlin	:	Only compiles Kotlin source files.
+				jar				:	Only creates the JAR file.
+				clean			:	Only deletes the build directory.
+
+			Gradle combines multiple tasks to complete larger operations such as Build or Run.
+	
+--> 
+
+Create Main.kt
+	Main.kt contains the application's Entry Point.
+	Example :
+		fun main() = application {
+
+		}
+		
+	--> First Compose Application
+
+		Main.kt	:
+
+			import androidx.compose.material.Text
+			import androidx.compose.ui.window.Window
+			import androidx.compose.ui.window.application
+
+			fun main() = application {
+				Window(
+					onCloseRequest = ::exitApplication,
+					title = "Compose Learning"
+				) {
+					Text("Hello Compose")
+				}
+			}
+
+		Purpose :	Build and run the smallest Compose Desktop application.
+
+		Result :	Successfully created and ran the first Compose Desktop application manually.
+
+
+******************************************** Chapter 3 -  Project Configuration ********************************************
+
+Desktop Target requires only 			:	JDK	|	Gradle	|	IntelliJ IDEA
+
+Android Target additionally requires 	:	Android SDK		|		Android Plugin		|	ADB		|	Android Device / Emulator
+
+--> Android SDK
+	SDK = Software Development Kit
+	It is a collection of tools required to build Android Applications.
+	
+	--> Android SDK Contains
+			Android APIs	|	Platform Libraries	|	Build Tools	|	Platform Tools	|	Emulator	|	ADB
+
+	--> Why do we need Android SDK?
+			Without Android SDK, Gradle cannot :	Compile Android Code	|	 Package APK	|	Run Application
+
+	--> Build Flow
+			Android Project		->	Gradle		->	Android SDK		->		APK Generated
+
+	********************************* SDK Manager *********************************
+	SDK Manager is responsible for downloading and updating Android SDK Components.
+	
+	--> Responsibilities	:	Download SDK	|	Install Build Tools	|	Install Platform Tools	|	Install Emulator	|	Install API Levels
+
+	********************************* Android Plugin *********************************
+	The Android Plugin adds Android development support to IntelliJ IDEA.
+
+	--> Responsibilities
+			Android Project Support	|	Device Manager	|	Logcat	|	SDK Integration	|	Android Run Configuration
+
+	
+	********************************* Kotlin Plugin *********************************
+
+	The Kotlin Plugin adds Kotlin language support to IntelliJ IDEA.
+
+	--> Responsibilities : Kotlin Syntax Highlighting | Auto Completion | Refactoring | Debugging | Kotlin Compiler Integration
+	
+	********************************* Device Manager *********************************
+
+	Device Manager manages Android Devices used for testing.
+
+	Supported Devices : Emulator	|	Physical Android Device
+
+	Responsibilities  : Create Emulator | Start Emulator | Stop Emulator | Manage Virtual Devices
+
+	--> Android Emulator 
+			An Emulator is a Virtual Android Device running on the Computer.
+
+	--> Why do we need Emulator?
+			If a Physical Device is unavailable, we can still run and test Android Applications.
+	
+	--> Physical Android Device
+			A real Android Phone can also be used.
+			Requirements : USB Cable | USB Debugging Enabled | Developer Options Enabled
+			
+	******************************** ADB (Android Debug Bridge) *********************************
+
+	ADB stands for Android Debug Bridge.
+	It is a communication tool between the Computer and an Android Device.
+	Without ADB, IntelliJ cannot communicate with the Android Device.
+	
+	Responsibilities : Detect Devices | Install APK | Execute Commands | Read Logs | Debug Applications
+
+	********************************* Environment Variables *********************************
+	Purpose	:	Point to the Android SDK Installation Directory.
+	
+	Gradle and Android Tools need to know where Android SDK is installed.
+	Common Variables :
+						ANDROID_HOME
+								OR
+						ANDROID_SDK_ROOT
+
+	********************************* JDK Configuration *********************************
+
+	--> Why configure JDK?
+		Both Gradle and Kotlin Compiler require JDK. If the wrong JDK Version is selected, the Build may fail.
+
+	********************************* Gradle Sync *********************************
+
+	--> What is Gradle Sync?
+		After opening an Android project, IntelliJ performs Gradle Sync
+
+		Flow : Read Gradle Files	->	Load Plugins	->	Resolve Dependencies	->	Configure Android SDK	->	Configure IntelliJ Project	->	Project Ready
+		
+		During Sync : Read Gradle Files | Resolve Dependencies | Download Missing Libraries | Configure Plugins | Configure Android SDK
+
+	--> Why does Gradle Sync fail?
+
+	Common Reasons : No Internet | Wrong SDK Path | Missing SDK | Plugin Version Mismatch | Kotlin Version Mismatch | Corrupted Gradle Cache
+	
+	******************************** Running the Application ********************************
+	
+	--> Desktop Target
+			Flow :	IntelliJ	->	Gradle	->	Kotlin Compiler		->	JVM		->		Compose Runtime		->		Desktop Window Opens
+
+	--> Android Target
+
+			Flow :	IntelliJ	->	Gradle	->	Android SDK		->	Generate APK	->	 ADB	->	 Android Emulator / Physical Device		->		Application Starts
+	
+	--> Device Detection
+		IntelliJ uses ADB to detect available Android Devices.
+		Detected Devices can be :	Emulator	|	Physical Android Device
+		
+	--> Run Configurations
+			Run Configurations tell IntelliJ how the application should be started.
+
+			Common Run Configurations :	Desktop	|	Android
+
+			Each configuration contains :	Target Platform	|	Main Entry Point	|	Build Configuration
+			
+			
+******************************************** Chapter 4 -  Project Structure ********************************************
+A Compose Multiplatform project is organized into multiple Modules.
+Each Module has a specific responsibility.
+
+Project Structure :
+
+	AtekGate
+	│
+	├── androidApp
+	├── desktopApp
+	├── shared
+	│
+	├── build.gradle.kts
+	├── settings.gradle.kts
+	├── gradle.properties
+	├── local.properties
+	├── gradlew
+	├── gradlew.bat
+	├── README.md
+	├── .gitignore
+	│
+	├── build
+	├── .gradle
+	├── .idea
+	├── .kotlin
+	└── gradle
+
+====================================================================================================
+******************************** Part 1 - Multiplatform Architecture ********************************
+
+--> Root Project
+	The Root Project is the top-most project.
+
+	It contains :
+
+		• Modules
+		• Build Configuration
+		• Gradle Configuration
+		• Project Settings
+
+	Everything inside the project belongs to the Root Project.
+
+----------------------------------------------------------------------------------------------------
+
+--> Why Multi-Module?
+
+	Compose Multiplatform supports multiple Platforms.
+
+	Instead of placing everything in one module, the project is divided into multiple Modules.
+
+	Benefits : Better Organization	|	Code Sharing	|	Platform-specific Code	|	Easier Maintenance	
+	
+******************************** Part 2 : Modules ********************************	
+A Module is an independent part of the project. Each Module has its own responsibility.
+
+
+--> androidApp
+
+	Purpose  :	Contains Android-specific code.
+	Examples :	Android Entry Point	|	Android Manifest	|	Android Resources	|	Android-only APIs
+
+
+--> desktopApp
+
+	Purpose  :	Contains Desktop-specific code.
+	Examples :	main()	|	Window()	|	Desktop Configuration	|	Desktop-only APIs
+
+--> shared
+
+	Purpose  :	Contains code shared between every platform.
+	Examples :	UI	|	Business Logic	|	Models	|	Utilities	|	ViewModels
+
+--> Module Relationship
+
+				shared
+				   │
+			───────────────
+			│				│
+	androidApp		desktopApp
+
+	Both platform modules use code from the shared module.
+	
+====================================================================================================
+******************************** Part 3 - Source Sets ********************************
+
+The shared module contains multiple Source Sets. Each Source Set stores code for a specific platform or purpose.
+
+--> commonMain
+		Purpose  :	Contains code shared by every platform.
+		Examples :	UI	|	Business Logic	|	Models	|	Utility Classes
+
+
+--> commonTest
+		Purpose :	Contains tests for commonMain.
+
+--> androidMain
+		Purpose  :	Contains Android-specific implementation.
+		Examples :	Android APIs	|	Android Services	|	Android Platform Code
+		
+--> androidHostTest
+		Purpose :	Contains Android Host Tests.
+
+--> jvmMain
+		Purpose  :	Contains Desktop JVM-specific implementation.
+		Examples :	Desktop APIs	|	JVM-specific Libraries	|	Desktop Platform Code
+
+--> jvmTest
+		Purpose :	Contains tests for jvmMain.
+
+--> Source Set Relationship
+
+				commonMain
+					│
+			──────────────────
+			│				│
+		androidMain		jvmMain
+			│				│
+	androidHostTest		jvmTest
+
+	commonMain
+
+			↓
+
+	Code shared by every Platform.
+
+====================================================================================================
+******************************** Part 4 - Folder Ownership ********************************
+
+--> build
+
+	Owner	 :	Gradle
+	Purpose  :	Contains files generated during Build.
+
+	Examples :	.class Files	|	JAR Files	|	Reports		|	Temporary Files
+
+	Note :	Generated Automatically.	|	Never modify manually.
+
+
+--> .gradle
+
+	Owner	 :	Gradle
+	Purpose  :	Gradle's internal working directory.
+
+	Contains :	Build Cache	|	Download Cache	|	Incremental Build Information
+
+
+--> .idea
+
+	Owner   :	IntelliJ IDEA
+	Purpose :	Stores IntelliJ Project Settings.
+
+	Examples :	SDK	|	Run Configurations	|	Window Layout	|	IDE Settings
+
+
+--> .kotlin
+
+	Owner   :	Kotlin Plugin
+	Purpose :	Stores Kotlin Build Metadata.
+
+	Used internally by the Kotlin Plugin.
+
+
+--> gradle
+
+	Owner 	:	Gradle Wrapper
+
+	Purpose :	Contains Gradle Wrapper Files.
+
+	Structure :
+		gradle
+			└── wrapper
+				├── gradle-wrapper.jar
+				└── gradle-wrapper.properties
+
+	Purpose :	Automatically download and use the correct Gradle Version.
+
+====================================================================================================
+******************************** Part 5 - Root Files ********************************
+
+--> build.gradle.kts
+	Purpose  :	Tells Gradle how to build the project.
+	Contains :	Plugins		|	Kotlin Configuration	|	Compose Configuration	|	Repositories
+
+
+--> settings.gradle.kts
+	Purpose  :	Configure the Root Project.
+	Contains :	Project Name	|	Plugin Management
+
+--> gradle.properties
+	Purpose  :	Store project-wide configuration.
+	Examples :	Kotlin Version	|	Compose Version	|	JVM Arguments
+
+--> local.properties
+
+	Purpose   : Stores local machine configuration.
+	Example   : Android SDK Location
+
+	Important : This file is machine-specific.It is normally NOT shared with other developers.
+
+
+--> gradlew
+		Purpose :	Gradle Wrapper launcher for Linux/macOS.
+
+--> gradlew.bat
+		Purpose :	Gradle Wrapper launcher for Windows.
+
+
+--> README.md
+		Purpose  :	Project Documentation.
+		Contains :	Project Overview	|	Setup Instructions	|	Usage Guide
+
+--> .gitignore
+		Purpose  :	Tells Git which files and folders should NOT be tracked.
+		Examples :	build/	|	.gradle/	|	local.properties
+
+
+******************************************** Chapter 5 - Build Lifecycle ********************************************
+Build Lifecycle is the complete process from clicking the Run button until the application is displayed on the screen.
+
+--> Complete Build Lifecycle 
+
+	Click Run	->	Gradle Starts	->	Read settings.gradle.kts	->	Read build.gradle.kts	->	Download Plugins	->	Download Dependencies	->	Configure Plugins
+																																								|
+																																								|
+																																								↓
+	Load Application Classes 	<-	 JVM Startup 	<-	 Package Application 	<-	 Generate JVM Bytecode (.class)	<-	 Compose Compiler Plugin	<-	 Compile Kotlin
+		|
+		|
+		↓
+	main()	->	application()	->	Compose Runtime Starts	->	Window()	->	Operating System Creates Native Window	->	Composition	->	Composable Functions Execute	->	UI Displayed
+
+
+--> Click Run	:	When the Run button is clicked, IntelliJ IDEA starts the Gradle Build Process.
+
+--> Gradle Starts	:	Gradle becomes responsible for building and running the project.
+		Responsibilities : Read Build Configuration | Download Required Components | Compile Source Code | Package Application | Run Application
+
+--> Read settings.gradle.kts	:	Gradle first reads settings.gradle.kts.
+		Purpose :	Identify Root Project	|	Configure Plugin Management	|	Locate Plugin Repositories
+
+--> Read build.gradle.kts	:	Gradle now reads build.gradle.kts.
+		Purpose :	Load Plugins	|	Configure Kotlin	|	Configure Compose	|	Configure Repositories	|	Configure Build
+
+--> Download Plugins	:	If required Plugins are not available, Gradle downloads them.
+		Examples :	Kotlin Multiplatform Plugin	|	Compose Multiplatform Plugin
+
+--> Download Dependencies	:	Gradle downloads project Libraries.
+		Examples :	Compose Runtime	|	Coroutines	|	SQLite	|	Retrofit	|	Ktor
+
+--> Configure Plugins	:	After downloading, Gradle initializes every Plugin.
+		Examples :	Kotlin Plugin	|	Compose Plugin
+
+--> Compile Kotlin	:	Kotlin Compiler converts	:	.kt Files	->	JVM Bytecode	->	.class Files
+
+--> Compose Compiler Plugin	:	The Compose Compiler Plugin extends the Kotlin Compiler.
+		Purpose :	Process @Composable Functions.	->	Generate additional Compose-specific code.
+
+--> Generate Bytecode
+		Result of Compilation :	.class Files
+		Bytecode is understood by the JVM, not by the Operating System.
+
+--> Package Application	:	Gradle packages everything together.
+		Application Package contains : .class Files	|	Kotlin Runtime	|	Compose Runtime	|	External Libraries
+
+
+--> JVM Startup	:	Gradle starts the JVM.
+		JVM Responsibilities : Load Classes | Allocate Memory | Execute Bytecode
+
+--> Load Application Classes	:	The JVM loads all required .class files into memory.
+		Examples :	MainKt.class	|	Compose Classes	|	Application Classes
+
+--> main()	:	The JVM starts execution from	main()	This is the Entry Point of the application.
+
+
+--> application()	:	main() calls	application()
+		Purpose :	Start the Compose Runtime.Create the Compose Environment.
+
+--> Compose Runtime Starts	:	The Compose Runtime becomes responsible for - 	• Composition	|	• State Management	|	• Recomposition	|	• UI Rendering
+
+
+--> Window()	:	application() executes	Window()
+		Window()
+			↓
+	Requests the Operating System
+			↓
+	Create a Native Window
+
+--> Operating System Creates Native Window
+		The Operating System creates the actual Desktop Window.
+		Compose does NOT create the Window.	It requests the Operating System to create it.
+
+--> Composition
+		Compose executes every Composable Function.
+			Examples :	App()	|	MainScreen()	|	Button()	|	Text()
+		Compose combines them into one UI Tree.
+
+--> UI Displayed
+		After Composition completes, the UI is rendered inside the Native Window.
+		The application is now ready for user interaction.
+
+
+####################################################################################################################################
+############################################ MODULE 4 : PRACTICE MULTIPLATFORM APPLICATIO ############################################
+
+****************************************************** Chapter 1 - Creating the Project ***********************************************************************
+
+----------------------- Problem : Gradle Import Failed -----------------------
+
+--> Generate the Project
+		The official Kotlin Multiplatform Project Generator creates a complete Gradle project.
+		With this property :
+			Project Name :	ComposeLearning_05
+			Project ID   :	com.atek.composelearning
+
+
+--> Open the Project
+		Open Project
+				↓
+		IntelliJ detects settings.gradle.kts
+				↓
+		IntelliJ recognizes it as a Gradle project.
+				↓
+		IntelliJ starts Gradle Import.
+
+--> Gradle Sync & AGP Compatibility & Build Errors
+
+	Gradle is a Java application.Therefore Gradle requires a JVM to start.
+    IntelliJ provides the configured Gradle JVM during Gradle Import.
+
+	--> While importing we get version issue 
+
+		Android Gradle Plugin (AGP)
+			Purpose :	AGP extends Gradle with Android build support.
+
+			Without AGP :	Gradle can build only normal Java/Kotlin applications.
+
+			With AGP :
+				Gradle can:
+					• Build Android Applications
+					• Read AndroidManifest.xml
+					• Process Android Resources
+					• Generate APK / AAB
+					• Use Android SDK
+
+
+	--> Problem
+
+		Generated Project	:	 AGP Version = 9.0.1
+
+		IntelliJ have Android Plugin	:	Supports only up to AGP 9.0.0-alpha06
+
+		Result :	
+				Version Mismatch ,Gradle Import Failed.
+				IntelliJ cannot understand the requested AGP version.Gradle Import stops and the project is not imported completely.
+
+		In our case : we update the intellij now intellij support our project AGP version
+		
+	Components
+		IntelliJ IDEA	:	IDE
+		Gradle	:	Build Tool
+		AGP (Android Gradle Plugin)	:	 Adds Android build support to Gradle.
+		Android SDK	:	Provides Android APIs, Build Tools and Platform Tools used by AGP.	
+		
+
+----------------------- Desktop Run Configuration -----------------------
+
+After successful Gradle Import :
+
+    See Gradle Section : 
+        Gradle
+            ↓
+        desktopApp
+            ↓
+        Tasks
+            ↓
+        compose desktop
+            ↓
+        run
+
+    Double-click :	run
+
+    Result :  Desktop application starts on Windows.
+
+    Note :
+        Android Run Configuration is created automatically.
+
+        Desktop application can be started using the Gradle  "compose desktop → run" task.
+
+--> JDK[Java Development Kit] Selection
+	 Provides the tools required to develop Java/Kotlin applications.Contain :   javac (Java Compiler)	|	java (JVM)	|	Development Tools	|	Standard Libraries
+
+--> JDK used in our Project
+	There are three places where JDK is involved.
+		
+		1. Project SDK
+			Purpose :	Used by IntelliJ IDEA for the project.
+			Location :	File	->	Project Structure	->	Project	->	Project SDK 
+			
+
+		2. Gradle JVM
+			Purpose :	Used by Gradle during Gradle Import and Build.
+			Location :	Settings	->		Build, Execution, Deployment	->		Build Tools		->		Gradle		->		Gradle JVM
+		
+		3. jvmToolchain()
+			Purpose :	Specifies which JDK Gradle should use to compile the project.
+			Example :
+				kotlin {
+					jvm {
+						jvmToolchain(11)
+					}
+				}
+				
+--> Android SDK Detection 
+
+	Purpose :	Provides the tools required to build and run Android applications.
+	Contains :	Android APIs	|	Build Tools	|	Platform Tools	|	Emulator	|	ADB (Android Debug Bridge)
+
+	--> Why do we need Android SDK?
+		Our project contains an Android module (androidApp).
+		During Android Build,
+			Gradle
+				↓
+			Android Gradle Plugin (AGP)
+				↓
+			Android SDK
+				↓
+			APK Generated
+		Without Android SDK,
+
+			• Android code cannot be compiled.
+			• APK cannot be generated.
+			• Application cannot run on Android devices.
+
+	--> How does IntelliJ detect Android SDK?
+			When the project is opened,
+			IntelliJ
+				↓
+			Android Plugin
+				↓
+			Search Android SDK
+
+		If found, Android project is configured automatically.
+		Otherwise, IntelliJ asks the developer to configure the SDK location.
+
+	--> SDK Location
+
+		Android SDK location is stored inside :   local.properties
+			Example : sdk.dir=C:\\Users\\<UserName>\\AppData\\Local\\Android\\Sdk
+
+		Purpose :  Tell Gradle where Android SDK is installed.
+
+	--> SDK Manager
+			SDK Manager is responsible for	: Downloading Android SDK	|	Installing API Levels	|	Installing Build Tools	|	Installing Platform Tools	|	Updating SDK Components
+
+	--> Relationship
+			IntelliJ IDEA
+					↓
+			Android Plugin
+					↓
+			Android Gradle Plugin (AGP)
+					↓
+			Android SDK
+					↓
+			Build Android Application
+
+************************************************ Chapter 2 - Understanding the Entry Points ************************************************
+
+--> Entry Point
+		Entry Point is the first function executed when an application starts.
+		Every platform has its own Entry Point.
+
+--> Desktop Entry Point
+		Location :	desktopApp	->	src	->	jvmMain	->	kotlin	->	Main.kt
+		Example  :
+			fun main() = application {
+
+			}
+		Purpose :	main() is the Entry Point of the Desktop application.
+
+	--> Desktop Startup Flow
+			User clicks Run	->	JVM Starts	->	main()	->	application()	->	Window()	->	App()
+
+	--> main()
+			Purpose 		:	Entry Point of the Desktop application.
+			Responsibility  :	Starts Compose Desktop.
+
+	--> application()
+			Purpose 		:	Starts the Compose Runtime.
+			Responsibility  :	Creates the application lifecycle.Manages application windows.
+
+	--> Window()
+			Purpose 		:	Creates a Desktop Window.
+			Responsibility  :	Display the application's UI.
+
+--> Android Entry Point 
+		Location : 	androidApp	->	src	->	androidMain	->	kotlin	->	MainActivity.kt	
+		Purpose  :	MainActivity is the Entry Point of the Android application.
+
+	--> Android Startup Flow
+		User taps App Icon	->	Android Operating System	->	MainActivity	->	onCreate()	->	setContent()	->	App()
+
+	--> MainActivity
+		Purpose :	Entry Point of the Android application.
+
+	--> onCreate()
+		Purpose :	First lifecycle function executed when Activity is created.
+
+	--> setContent()
+		Purpose :	Tell Compose what UI should be displayed.
+
+--> Shared UI 
+		Location :	shared	->	src	->	commonMain	->	kotlin	->	App.kt
+
+
+	--> App()
+			App() is the Root Composable of our application.It contains the UI shared by every platform.
+
+	--> Why App() is inside shared?
+			Both Desktop and Android display the same UI.
+			Therefore App() is written once inside shared.
+
+					App()
+					   │
+				┌──────┴──────┐
+				│             │
+			Desktop      Android
+
+--> Separation of Responsibility
+
+    desktopApp	Responsible for :	Starting Desktop Application.
+
+    androidApp	Responsible for :	Starting Android Application.
+
+    shared	    Responsible for :	Shared UI	|	Business Logic	|	Models	|	Utilities
+
+--> libs.versions.toml
+		Location :	gradle/libs.versions.toml
+		Purpose  :
+			Central place to manage :	Plugin Versions	|	Library Versions	|	Dependency Versions
+
+	Instead of writing versions inside every build.gradle.kts, all versions are stored in one file.
+	
+--> Version Catalog
+		Version Catalog is Gradle's modern dependency management system.
+
+	Old Style :
+		build.gradle.kts
+			version("2.1.0")
+
+	New Style :
+		libs.versions.toml
+				↓
+			Alias
+				↓
+		build.gradle.kts
+
+	Benefits :	One place for versions	|	Easier upgrades	|	Less duplication
+	
+************************************************  Chapter 5 - Build the First Screen ************************************************
+--> Text()
+	It is a Composable Function provided by the Compose library.
+
+	Purpose : Display text on the screen.
+	Syntax 	:
+		Text(
+			text = "Hello Kotlin"
+		)
+	Return Type	:	Unit
+	
+	Note :
+		Text() does not create a window. It only describes the text that Compose should display.
+		Can be called only from another @Composable function.
+	
+	
+--> Modifier 	
+	Purpose :	Controls how a Composable is displayed.
+	Difference :
+		Text()         → What to display.
+		Modifier       → How to display it.
+		
+	--> Empty Modifier
+
+		modifier = Modifier
+
+		Meaning :	No additional behavior is applied.
+		
+	--> fillMaxWidth()
+
+		Modifier.fillMaxWidth()
+
+		Purpose :	Makes the Composable occupy the available width.
+
+	-->	fillMaxSize()	
+
+		Modifier.fillMaxSize()
+
+		Purpose :	Makes the Composable occupy the available width and height.
+
+	-->	Modifier Chain
+
+		Multiple Modifiers can be combined.
+
+		Example :	Modifier.fillMaxWidth().fillMaxSize()
+
+	Note :
+		Modifier changes the Composable's layout or behavior.
+		It does NOT change what the Composable displays.
+		
+--> MaterialTheme
+	
+	Purpose :	Provides a common design (Theme) to all Composable functions.
+	A Theme contains :	Colors	|	Typography	|	Shapes
+	
+	--> Why do we use MaterialTheme?
+		Instead of configuring every Composable separately, MaterialTheme provides a common design that is shared by all child Composables.
+		
+		Example :
+			MaterialTheme {
+				Text("Hello Kotlin")
+			}
+	
+	Production Project Example :
+		AtekTheme {
+            App()
+        }
+	
+	Note :
+		MaterialTheme does not display anything on the screen.
+		It only provides design information to its child Composables.
+		
+--> Column() 
+	Purpose :	Arrange child Composables vertically.
+	Type 	:	Layout Composable.
+
+	Syntax
+		Column {
+			Text("Hello")
+			Text("Kotlin")
+			Text("Compose")
+		}
+
+	Result	:
+		Hello
+		Kotlin
+		Compose
+
+	UI Composables	Example 	: Text()	|	Button()	|	Image()
+	Layout Composables Example  : Column()	|	Row()		|	Box()
+
+	Note :
+		Column() does not display any UI.
+		It only arranges child Composables vertically.
+		
+--> Button() 
+	Purpose :	Display a clickable button.
+	Type 	:	UI Composable.
+
+	Syntax	:	
+		Button(onClick = {	}) {
+			Text("Click Me")
+		}
+
+	-->	onClick
+		Executed when the user clicks the Button.
+
+	-->	Content	
+		The second lambda defines the UI displayed inside the Button.
+
+	--> Hierarchy
+		Button
+			│
+			└── Text
+
+	Note :
+		Button is a clickable container.It can display any Composable as its content.
+		Text() is commonly used as the button label.
+
+		
+--> Row()
+
+	Purpose :	Arrange child Composables horizontally.
+	Type 	:	Layout Composable.
+
+	Syntax	:	
+		Row {
+			Text("Hello")
+			Button(
+				onClick = { }
+			) {
+				Text("Click Me")
+			}
+		}
+
+	Result	:	
+		Hello    [ Click Me ]
+
+	Note :
+		Like Column(), Row() does not display UI.It only arranges its direct child Composables.
+		
+--> Box() 
+
+	Purpose :	Arrange child Composables by stacking them on top of each other.
+	Type 	:	Layout Composable.
+
+	Syntax	:	
+		Box {
+			Text("Hello")
+			Button(
+				onClick = { }
+			) {
+				Text("Click Me")
+			}
+		}
+
+	Result	:	Child Composables are displayed in the same space (Overlay).
+
+	Common Uses	:	Image + Text	|	Loading Screen	|	Notification Badge	|	Floating Button	|	Overlay UI
+
+	Note :	Box() does not display UI. It only arranges its direct child Composables.
+		
+	Difference
+		Column()	:	Arranges children vertically.
+		Row()		:	Arranges children horizontally.
+		Box()		:	Stacks children on top of each other.
+
+
+************************************************ Chapter 6 - State Management ************************************************
+
+--> State :
+	Data that can change while the application is running.
+	Example :	Counter Value	|	Username	Password	|	Login Status	|	Selected Item	|	Dark Mode
+	
+--> remember()
+
+	Purpose :	Store a value in Compose memory.
+	Syntax	:	
+		remember {
+			Initial Value
+		}
+
+	Example	:
+		val count = remember { 0 }
+
+	Problem Solved :
+		Prevents values from being recreated during Recomposition.
+
+	Limitation
+		remember() does NOT notify Compose when the value changes.
+
+	Note	:	remember() remembers a value.  It does not make the value observable.
+	
+--> mutableStateOf() 
+	Purpose 		:	Create an observable State object.
+	Syntax			:	mutableStateOf(0)
+
+	Return Type		:	MutableState<T>
+	
+	Example			:	val count = mutableStateOf(0)
+
+	Read Value		:	count.value
+
+	Update Value	:	count.value++
+
+	Responsibilities :	Store the value.	|	Allow the value to change.	|	Notify Compose when the value changes.
+
+	Difference		:
+		remember()			:	Keeps the State object alive.
+		mutableStateOf()	:	Makes the value observable.
+
+	Flow	:
+		count.value changes		->	 Compose notified	->	Recomposition	->		UI Updated
+		
+--> by (Property Delegation)
+	
+	Purpose :	Remove the need to use .value when working with MutableState.
+
+	Without by	:	
+		var count = remember {
+			mutableStateOf(0)
+		}
+
+		Read 	:	count.value
+		Update 	:	count.value++
+
+	With by	:
+		var count by remember {
+			mutableStateOf(0)
+		}
+
+		Read 	:	count
+		Update	:	count++
+
+
+	Required Import:
+		import androidx.compose.runtime.getValue
+		import androidx.compose.runtime.setValue
+
+	Note :
+		by delegates reading and writing to the underlying MutableState object.
+		It is Kotlin's Property Delegation feature, not a Compose feature.
+		
+--> Recomposition
+
+Purpose :	Re-execute Composable functions when State changes.
+
+Flow	:	State Changes	->	Compose detects the change	->	Recomposition starts	->	Affected Composable functions execute again		->		UI is updated
+
+Example	:	
+		count++
+            ↓
+    mutableStateOf detects the change
+            ↓
+    App() executes again
+            ↓
+    Text("Count : $count")
+            ↓
+    Screen updates
+
+Note :
+    During Recomposition,
+        • State values are preserved by remember().
+        • Only Composable functions depending on the changed State are recomposed.
+        • The entire application is not recreated.
+		
+************************************************ Chapter 7 - Modifier & Layout Mastery ************************************************
+
+--> Modifier Chain
+	
+	Purpose :	Apply multiple Modifiers to a Composable.
+
+	Example	:	Modifier.fillMaxWidth().background(Color.Yellow).padding(16.dp)
+
+	Execution Order	:	Modifier	->	fillMaxWidth()	->	background()	->	padding()
+
+	Note :	
+		• Each Modifier receives the result of the previous Modifier.
+		• Modifiers are applied in the order they are written.
+		• Changing the order can produce a different UI.
+		
+--> padding()
+
+	Purpose :	Adds spacing around a Composable.
+	Syntax	:	Modifier.padding(16.dp)
+
+	Example	:
+		Modifier
+			.background(Color.Red)
+			.padding(16.dp)
+
+	Behavior :
+		background()
+			↓
+		Draws the background.
+
+		padding()
+			↓
+		Adds spacing around the previous result.in between text and background
+
+	Example
+		background()
+			↓
+		padding()
+
+		Result :	Red background with spacing around the Text.
+
+	Note
+		• padding() creates spacing.
+		• It does not change the Text size.
+		• Modifier order affects the final UI.
+		
+--> size() 
+
+	Purpose :	Sets both Width and Height of a Composable.
+	Syntax	:	Modifier.size(100.dp)
+	Example	:
+		Box(
+			modifier = Modifier
+				.size(100.dp)
+				.background(Color.Red)
+		)
+
+	Note
+		• size() changes the Composable size.
+		• It does not change the content size.
+		• Width and Height become equal.
+		
+--> width()
+	
+	Purpose	:	Sets only the Width.
+	Syntax	:	Modifier.width(200.dp)
+	Example	:
+		Text(
+			text = "Hello Kotlin",
+			modifier = Modifier
+				.width(200.dp)
+				.background(Color.Red)
+		)
+	
+	Note
+		• Height remains unchanged.
+		• Only Width changes.
+		
+--> height ()
+	
+	Purpose	:	Sets only the Height.
+	Syntax	:	Modifier.height(100.dp)
+	Example	:
+		Text(
+			text = "Hello Kotlin",
+			modifier = Modifier
+				.height(100.dp)
+				.background(Color.Red)
+		)
+	
+	Note
+		• Width remains unchanged.
+		• Only Height changes.	
+		
+--> fillMaxWidth()
+	
+	Purose : 	Occupies the maximum available width provided by the parent.
+	Syntax :	Modifier.fillMaxWidth()
+	Example:
+		Text(
+			text = "Hello Kotlin",
+			modifier = Modifier
+				.fillMaxWidth()
+				.background(Color.Red)
+		)
+	Note
+		• Width depends on Parent.
+		• Height remains unchanged.
+		
+--> fillMaxSize()
+
+	Purose : 	Occupies the maximum available Width and Height provided by the parent.
+	Syntax :	Modifier.fillMaxSize()
+	Example:
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.background(Color.Red)
+		)
+	Note	:
+		• Depends on Parent size.
+		• Content size does not change.
+		• Composable occupies the available area.
+		
+--> Alignment 
+
+	Purpose :	Aligns children on the Cross Axis.
+
+	Column	:
+		horizontalAlignment	:	Start	|	CenterHorizontally	|	End
+
+	Row		:
+		verticalAlignment	:	Top		|	CenterVertically	|	Bottom
+
+	Note	:
+		• Alignment works on the Cross Axis.<---------->
+		• Column → Horizontal Alignment
+		• Row → Vertical Alignment
+	
+--> Arrangement
+
+Purpose :	Positions children on the Main Axis.
+
+Column	:	
+    verticalArrangement	:	Top	|	Center	|	Bottom	|	SpaceBetween	|	SpaceAround		|	SpaceEvenly
+
+Row		:
+    horizontalArrangement	:	Start	|	Center	|	End	|	SpaceBetween	|	SpaceAround		|	SpaceEvenly
+
+--> Difference
+		Alignment	:	Controls Cross Axis.
+		Arrangement	:	Controls Main Axis.
+
+	Note
+		• Column → verticalArrangement
+		• Row → horizontalArrangement
+
+--> Nested Column & Row
+	Example :
+		Column {
+			Text("Title")
+			Column {
+			Text("Name")
+			Text("Age")
+			}
+		}
+		Row {
+			Text("Name")
+			Row {
+				Button(...) { }
+				Button(...) { }
+			}
+		}
+
+--> Box 
+	Example :
+		Box(
+			modifier = Modifier.fillMaxSize(),
+			contentAlignment = Alignment.Center
+		) {
+			Text("Hello")
+
+		}
