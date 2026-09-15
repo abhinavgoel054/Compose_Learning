@@ -144,44 +144,49 @@
 ----- A. DEVELOPMENT ENVIRONMENT -----
 
 [ ] IntelliJ IDEA
-[ ] JDK 11 (Production Version)
+[ ] JDK / JBR
 [ ] JDK vs JRE vs JVM
+[ ] Java Version Compatibility
 [ ] Gradle
 [ ] Kotlin Compiler
 [ ] Compose Compiler Plugin
 [ ] Compose Multiplatform Plugin
 [ ] Compose Runtime
-[ ] Dependency
+[ ] Dependencies
 [ ] How Everything Connects
 
 ----- B. PROJECT CREATION -----
 
-	[ ] Current Project Creation Methods
-	[ ] Why Compose Project Wizard Changed
-	[ ] Official Project Generator
-	[ ] Generated Project Structure
-	[ ] Open Project
-	[ ] Gradle Sync
-	[ ] Run Generated Project
+[ ] Current Project Creation Methods
+[ ] Why Compose Project Wizard Changed
+[ ] Kotlin Multiplatform Project Wizard
+[ ] Official Project Generator
+[ ] Generated Project Structure
+[ ] Open Project
+[ ] Gradle Sync
+[ ] Run Generated Project
 
-	----- Manual Project Creation -----
+----- Manual Project Creation -----
 
-	[ ] Create Empty Folder
-	[ ] settings.gradle.kts
-	[ ] build.gradle.kts
-	[ ] gradle.properties
-	[ ] Gradle Wrapper
-	[ ] libs.versions.toml (if using Version Catalog)
-	[ ] Link Gradle Project
-	[ ] Gradle Import Flow
-	[ ] Create Main.kt
-	[ ] First Compose Application
+[ ] Create Empty Folder
+[ ] settings.gradle.kts
+[ ] build.gradle.kts
+[ ] gradle.properties
+[ ] Gradle Wrapper
+[ ] libs.versions.toml (Version Catalog)
+[ ] Link Gradle Project
+[ ] Gradle Import Flow
+[ ] Create Main.kt
+[ ] First Compose Application
 	
 	
 ----- C. GRADLE FUNDAMENTALS -----
 
+[ ] What is Gradle?
 [ ] Gradle Tasks
 [ ] Task Dependency
+[ ] Plugins
+[ ] Dependencies
 [ ] Application Packaging
 [ ] Runtime Execution
 
@@ -190,7 +195,7 @@
 
 [ ] Android SDK
 [ ] SDK Manager
-[ ] Android Plugin
+[ ] Android Gradle Plugin
 [ ] Kotlin Plugin
 [ ] Device Manager
 [ ] Android Emulator
@@ -198,7 +203,7 @@
 [ ] ADB (Android Debug Bridge)
 [ ] Environment Variables
 [ ] Gradle Sync
-[ ] JDK Configuration
+[ ] JDK / JBR Configuration
 
 
 ----- E. RUNNING THE APPLICATION -----
@@ -213,43 +218,52 @@
 
 ----- F. PROJECT STRUCTURE -----
 
-	[ ] Root Project
-	[ ] Why Multi-Module?
+[ ] Root Project
+[ ] Gradle Project vs Module
+[ ] Why Multi-Module?
+[ ] Current Compose Multiplatform Project Structures
 
-	--> Modules 
+--> Modules
 
-	[ ] androidApp
-	[ ] desktopApp
-	[ ] shared
-	[ ] Module Relationship
+[ ] shared
+[ ] desktopApp
+[ ] androidApp
+[ ] composeApp
+[ ] Module Relationship
 
-	--> Source Sets 
 
-	[ ] commonMain
-	[ ] commonTest
-	[ ] androidMain
-	[ ] androidHostTest
-	[ ] jvmMain
-	[ ] jvmTest
+--> Source Sets
 
-	--> Folder Ownership 
+[ ] commonMain
+[ ] commonTest
+[ ] androidMain
+[ ] androidHostTest
+[ ] jvmMain
+[ ] jvmTest
+[ ] Platform-specific Source Sets
+[ ] Source Set Dependency
 
-	[ ] build
-	[ ] .gradle
-	[ ] .idea
-	[ ] .kotlin
-	[ ] gradle
+--> Folder Ownership
 
-	--> Root Files 
+[ ] build
+[ ] .gradle
+[ ] .idea
+[ ] .kotlin
+[ ] gradle
+[ ] src
 
-	[ ] build.gradle.kts
-	[ ] settings.gradle.kts
-	[ ] gradle.properties
-	[ ] local.properties
-	[ ] gradlew
-	[ ] gradlew.bat
-	[ ] README.md
-	[ ] .gitignore
+
+--> Root Files
+
+[ ] build.gradle.kts
+[ ] settings.gradle.kts
+[ ] gradle.properties
+[ ] local.properties
+[ ] gradlew
+[ ] gradlew.bat
+[ ] libs.versions.toml
+[ ] README.md
+[ ] .gitignore
 
 
 ----- G. BUILD LIFECYCLE -----
@@ -257,12 +271,13 @@
 [ ] Click Run
 [ ] Gradle Starts
 [ ] Read settings.gradle.kts
+[ ] Configure Project
 [ ] Read build.gradle.kts
-[ ] Download Plugins
-[ ] Download Dependencies
+[ ] Resolve Plugins
+[ ] Resolve Dependencies
 [ ] Compile Kotlin
-[ ] Compose Compiler Plugin
-[ ] Generate Bytecode
+[ ] Compose Compiler
+[ ] Generate JVM Bytecode
 [ ] Package Application
 [ ] JVM Startup
 [ ] Compose Runtime Startup
@@ -270,7 +285,6 @@
 [ ] application()
 [ ] Window()
 [ ] UI Displayed
-
 
 
 =========================== Module 4 : BUILDING OUR FIRST MULTIPLATFORM APPLICATION ===========================

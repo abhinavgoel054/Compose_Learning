@@ -1501,9 +1501,13 @@ NOTE :
 --> mutableStateOf()				- it notify when something change then Recomposition happen and compose get new value
 	
 	Creates a State Object with an initial value.
-	Example :
-		mutableStateOf(0)
-	
+	`mutableStateOf()` creates an observable Compose State object containing a value.
+
+	Example:
+		val count = mutableStateOf(0)
+			 ↓						↓
+    State object				Initial value		 
+				
 	--> Purpose
 		Create a State Object that can notify Compose when its value changes.		.
 		A normal Int is just a value and cannot notify Compose.
@@ -1513,14 +1517,18 @@ NOTE :
 		Normal Variable :
 			var count = 0
 			count++
-		Compose does NOT know the value changed.
-		
-		------------------------------------------------
+		Compose does not automatically observe an ordinary variable as Compose State.
 
-		State Object : 
-			val count = mutableStateOf(0)
-			count.value++
-		Compose is notified automatically.
+		Therefore, changing it does not by itself tell Compose:
+			"The UI needs to be reconsidered."
+		
+	--> With Compose State:
+
+		val count = mutableStateOf(0)
+
+		count.value++					//The state object's value changes.
+		
+		Compose can observe this state when it is read by Composable code and schedule the relevant recomposition.
 
 	--> Accessing the Value
 		
@@ -1530,11 +1538,10 @@ NOTE :
 
 		Update Value : count.value++
 		
-********************************* remember() *********************************
 --> remember()
 	remember() stores an Object and returns the same Object during every Recomposition.	
 		
-	--> Why do we need remember()?
+	--> Problem without remember()
 
 		Without remember()
 		
@@ -1543,10 +1550,15 @@ NOTE :
 				val count = mutableStateOf(0)
 			}
 			
-		During every Recomposition, a NEW State Object is created.
-		The previous State Object is lost.
+		A Composable can be executed again during recomposition.
 
-	Solution : remember
+		If we simply create the State object inside the Composable,we don't want a completely new State object to replace the
+		previous one every time the function is recomposed.
+		This is where `remember()` is used.
+
+	Solution : remember()
+		`remember()` stores a value in the Composition and returns the remembered value across recompositions.
+		
 		@Composable
 		fun Counter() {
 
@@ -1554,12 +1566,11 @@ NOTE :
 				mutableStateOf(0)
 			}
 		}
-	remember() creates the State Object only once.
-	After that, it always returns the SAME Object.
+
 
 	--> What does remember() remember?
 
-		remember() remembers the object returned by its lambda.
+		`remember()` remembers the result produced by its lambda.
 			Example :
 				remember {
 					mutableStateOf(0)
@@ -1567,42 +1578,55 @@ NOTE :
 			The lambda returns a State Object.
 			So remember() remembers the State Object, not the integer value.
 
-********************************* remember() + mutableStateOf() *********************************
---> Why are they used together?
-		mutableStateOf()	->	Creates State Object
-		remember()			->	Keeps the same State Object across Recompositions
+--> remember() + mutableStateOf() 
 
---> Responsibilities :
-
-	mutableStateOf()
-		↓
-	Create State Object
-		↓
-	Notify Compose when Value Changes
-
-	------------------------------------------------
-
-	remember()
-		↓
-	Store the State Object
-		↓
-	Return the Same Object during every Recomposition			
-	
-	
-********************************* by (Property Delegation) *********************************
---> Without by :
-		val count = remember {
-			mutableStateOf(0)
-		}
-		Read	→	count.value
-		Update	→	count.value++
+	--> Why are they used together?
+			mutableStateOf()	->	  Creates observable State
+			remember()			->	Keeps that State associated with the Composition across recompositions
 		
---> With by :
-		var count by remember {
-			mutableStateOf(0)
+		Together:
+			
+			remember {
+				mutableStateOf(0)
+			}
+
+			gives us State that survives recomposition.
+		
+	--> Example
+		@Composable
+		fun Counter() {
+
+			val count = remember {
+				mutableStateOf(0)
+			}
+
+			Button(
+				onClick = {
+					count.value++
+				}
+			) {
+				Text("Count = ${count.value}")
+			}
 		}
-	Read	→	count
-	Update	→	count++
+
+	Flow:
+		Initial State	->	 count = 0		->	UI shows "Count = 0"	->	User clicks Button	->	count changes to 1	->	 Compose observes State change	->	Recomposition	->	 UI shows "Count = 1"
+		
+-->  by (Property Delegation in Compose) 
+
+	--> Without by :
+			val count = remember {
+				mutableStateOf(0)
+			}
+			Read	→	count.value
+			Update	→	count.value++
+			
+	--> With by :
+			var count by remember {
+				mutableStateOf(0)
+			}
+		Read	→	count
+		Update	→	count++
 
 	--> Purpose
 		by automatically accesses .value.
@@ -1611,68 +1635,108 @@ NOTE :
 	Note : 
 		Use val when working without "by"
 		Use var when using by because the value itself changes.
+		
+		Example :
+			var count by remember {
+				mutableStateOf(0)
+			}
 
-********************************* rememberWindowState() *********************************
+				The delegated property itself is being read and assigned:
+
+					count++
+					count = 10
+
+				Therefore we use `var`.
+
+			Without `by`, the state-holder reference can remain `val`:
+
+				val count = remember {
+					mutableStateOf(0)
+				}
+
+				count.value++
 
 --> rememberWindowState()
-	rememberWindowState() creates and remembers a WindowState Object.
+	`rememberWindowState()` is a Desktop Compose helper used to create and remember a `WindowState`.
 	
---> Why do we need WindowState?
+	Example:
+		Window(
+			state = rememberWindowState()
+		) {
+			App()
+		}
 	
-	A native window has properties like :
-		• Width	|	• Height	|	• Position	|	• Placement (Normal / Maximized / Fullscreen)
+	--> What is WindowState?
+		`WindowState` represents the state/configuration of a desktop window, such as:
+			• Width	|	• Height	|	• Position	|	• Placement(Normal / Maximized / Fullscreen)
+			
 
-	Compose stores these properties inside a WindowState Object.
-
---> Important
-	WindowState ≠ Native Window
-	WindowState only stores the Window's State.
-	It does NOT create the Native Window.
+	--> Important
+		WindowState ≠ Native Window
+		WindowState stores information about the window.
+		It does NOT itself create the native desktop window.
+				
+	--> Why rememberWindowState()?
+		`rememberWindowState()` remembers the WindowState across recompositions instead of creating a replacement state object each time.
 		
---> Why rememberWindowState()?
-	Without rememberWindowState(),
-	a new WindowState Object would be created during every Recomposition.
-	The previous WindowState would be lost.
-	
-	
---> Solution
+		Example:
+			Window(
+				state = rememberWindowState(
+					placement = WindowPlacement.Fullscreen
+				)
+			) {
+				App()
+			}
+		
+		Meaning :
+			Create one WindowState object
+					↓
+			Initial Placement = Fullscreen
+					↓
+			Remember the same WindowState object across Recompositions.
 
-	rememberWindowState()
-			↓
-	Create WindowState once
-			↓
-	Remember the same WindowState across Recompositions
-	
+			
+	--> Why not use remember { WindowState() }?
+
+		Because creating and remembering WindowState is a very common requirement.
+		Compose provides a helper function :	rememberWindowState()
+			
+********************************* E. WINDOW CONFIGURATION *********************************
+--> Window()
+
+    `Window()` is a Compose Desktop function used to create and configure a desktop application window.
 	Example :
 		Window(
-			state = rememberWindowState(
-				placement = WindowPlacement.Fullscreen
-			)
-		) { ... }
+			onCloseRequest = ::exitApplication,
+			title = "ATEK GATE",
+			state = rememberWindowState()
+		) {
 
-	Meaning :
-		Create one WindowState object
-				↓
-		Initial Placement = Fullscreen
-				↓
-		Remember the same WindowState object across Recompositions.
+		}
+	--> What does Window() do?
+
+		Window() connects our Compose UI with the desktop windowing system.
+
+		It allows us to configure things such as :
+			• Window title	|	• Window size / state	|	• Close behavior	|	• Resizability	|	• Window icon	|	• Fullscreen / Maximized placement	|	• Other window properties
+
+	Important :
+        Window() does not mean that Compose replaces the OS windowing system.
+        The actual native window is still managed by the underlying desktop platform.
+	
+	--> Window() Content
+		`Window()` also accepts a content lambda.
+
+		Example :
+			Window(
+				onCloseRequest = ::exitApplication
+			) {
+				App()
+			}	
+	
+--> Window() Parameters
+	Common Window() parameters :
 		
---> Why not use remember { WindowState() }?
-
-	Because creating and remembering WindowState is a very common requirement.
-	Compose provides a helper function :	rememberWindowState()
-		
-		
-********************************* Window() Parameters *********************************
-Example :
-	Window(
-		onCloseRequest = ::exitApplication,
-		title = "ATEK GATE",
-		state = rememberWindowState()
-	) {
-
-	}
-
 	1. onCloseRequest
 		Example : 
 			Window(onCloseRequest = ::exitApplication) {
@@ -1682,7 +1746,7 @@ Example :
 		Example :
 			onCloseRequest = ::exitApplication
 		
-		::exitApplication means passes a reference (address) to the function.If we pass like onCloseRequest = exitApplication() then function retur immediately
+		::exitApplication means passes a reference (address) to the function.If we pass like onCloseRequest = exitApplication() then function retur immediately   instead of passing it as the callback.
 		
 		We can alse be :
 			onCloseRequest = {
@@ -1690,7 +1754,7 @@ Example :
 				exitApplication()
 			}
 			
-	2. title
+	2. title	:	Sets the title displayed by the desktop window.
 		Example : 
 			Window(
 				title = "ATEK GATE"
@@ -1715,69 +1779,152 @@ Example :
 			)
 		Sets the application's icon.
 		
-	5. resizable
+	5. resizable	:	  Controls whether the user can resize the window.
 		Example :
 			Window(
 				resizable = false
-			)
-		The user cannot resize the window.Default : true
+			){
+				App()
+			}
+		`false` means the user cannot resize the window.
+		Default is generally `true`.
 	
-	6. undecorated
+	6. undecorated	:	Controls whether the normal operating-system window decorations are displayed.
 		Example :
 			Window(
 				undecorated = true
 			)
-		Remove the operating system decorations.
+		 This can remove normal decorations such as the title bar and system borders.
 	
-	7. transparent
+	7. transparent	:	  Allows the window to use transparency.
 		Example :
 			Window(
 				transparent = true
-			)
+			){
+				App()
+			}
 		Allows transparent windows.
 			
-	8. alwaysOnTop
+	8. alwaysOnTop	:	 Controls whether the window stays above other windows.
 		Example
 			Window(
 				alwaysOnTop = true
-			)
-		The window always stays above other windows.
-		
---> application() Parameters
+			){
+				App()
+			}
+
+--> WindowState
+	`WindowState` represents the state/configuration of a Compose Desktop window.
+
+	It can contain information such as :
+		• Width		|	• Height	|	• Position	|	• Placement
+
+	Placement can represent states such as :
+		• Normal	|	• Maximized		|	• Fullscreen
+
+	--> rememberWindowState()
+		`rememberWindowState()` creates and remembers a WindowState across recompositions.
+
+		Example :
+			Window(
+				state = rememberWindowState(
+					placement = WindowPlacement.Fullscreen
+				)
+			) {
+				App()
+			}
+		--> Why rememberWindowState()?
+			WindowState is state associated with the Compose window.
+			During recomposition, we do not want to replace the state object unnecessarily.
+
+			`rememberWindowState()` keeps the WindowState associated with the current Composition.
+
+			Important :
+				`rememberWindowState()` remembers the WindowState.
+				It does NOT create the native window by itself.
+
+********************************* F. APPLICATION CONFIGURATION *********************************
+--> application()
+	`application()` is a Compose Desktop application function that provides the application environment and desktop application lifecycle.	
+	
 	Example :
 		fun main() = application {
+			Window(
+				onCloseRequest = ::exitApplication
+			) {
+				App()
+			}
 		}
-	Conceptually :
+		
+	--> Relationship with main()
+		`main()` is still the Kotlin/JVM entry point.
+		`application()` is called from `main()` to start the Compose Desktop application environment.
 
-		application(
-			exitProcessOnExit : Boolean = true,
-			content : ApplicationScope.() -> Unit
-		)
-	application() is a Higher Order Function. It initializes the Compose Runtime. It executes the lambda after initialization.
+	--> application() is a Higher-Order Function
+		`application()` accepts a lambda.
 
-	1. content (Lambda)
-		Purpose : The Lambda executed after Compose Runtime initialization.
-		Example:
+		Example :
 			application {
-				Window {
+				Window(...) {
 					App()
 				}
 			}
-		This is the code Compose executes after the Compose Runtime has been initialized.
+
+		The code inside `{ }` is the lambda passed to application().
+
+		Conceptually :
+			application(
+				content = {
+					Window(...) {
+						App()
+					}
+				}
+			)
+--> application() Parameters
+	The important parameters we need to know here are :
+		1. content	|	2. exitProcessOnExit
+	
+	1. content (Lambda)
+		`content` is the lambda containing the code that should run inside the Compose Desktop application environment.
+		Example:
+			application {
+				Window(
+					onCloseRequest = ::exitApplication
+				) {
+					App()
+				}
+			}
+		Conceptually :
+			application()	->	Compose application environment	->	content lambda	->	Window()	->	App()
 	
 	2. exitProcessOnExit
-		Purpose : Controls whether the JVM Process exits when the application closes.
-		Example:
+		Purpose : Controls whether the JVM Process exits when the Compose application closes.
+		Example :
 			application(
 				exitProcessOnExit = true
 			) {
+				Window(
+					onCloseRequest = ::exitApplication
+				) {
+					App()
+				}
 			}
 		Default :   true
+			 Application exits
+				  ↓
+			JVM process exits
+			
+		`false` :
+			Application exits
+				  ↓
+			JVM process is not automatically terminated by this setting
+
+------------------------------------------------------------------------------------------------------------
 
 
-############################################ MODULE 3 : BUILD A COMPOSE MULTIPLATFORM PROJECT ############################################
+####################################### Module 3: PROJECT FOUNDATION : Project setup and then production development. ##########################################################
 
-************************************************** Chapter 1 — Development Environment **************************************************
+********************************* A. DEVELOPMENT ENVIRONMENT *********************************
 
 --> Project Flow :
 	Developer		->		IntelliJ IDEA		->		Gradle		->		Compose Compiler Plugin		->		Kotlin Compiler		->		.class Files	->		JVM		->		Compose Runtime		->		Operating System		->		Application Running
