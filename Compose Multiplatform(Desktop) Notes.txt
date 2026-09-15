@@ -10,7 +10,7 @@ Types of Applications which Kotlin Support :
 	├── Android Application
 	├── Web Application
 	├── Server Application
-	└── CLI Application			- is a special type of console application that accepts commands or arguments from the user.Example : git status
+	└── CLI Application			- is a special type of console application that accepts commands or arguments from the user. Example : git status
 
 
 Kotlin can be used to develop many application types : 
@@ -30,11 +30,14 @@ Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
 	└── iOS Target
 	
 	
-*********************************CHAPTER 1 —  Desktop Application Lifecycle *********************************
+********************************* A. DESKTOP APPLICATION LIFECYCLE *********************************
 
 --> What Is A Desktop Application?
-		A desktop application is a program that runs as a process under the Operating System (such as Windows, Linux, or macOS) and provides a Graphical User Interface (GUI) through which the user interacts with the application.
-
+	A desktop application is a program that runs as a process under the Operating System (such as Windows, Linux, or macOS) and provides a Graphical User Interface (GUI) through which the user interacts with the application.
+	
+	A desktop application is ultimately a program that the Operating System starts and manages.
+	Not every desktop application must have a GUI. Console applications can also run as processes on a desktop Operating System.
+	
 --> Desktop Application Lifecycle
 	User	->	Double Clicks EXE	->	Windows Operating System	->	Loads EXE into RAM	->	Creates Process	->	Initializes Process Resources	->	Starts Primary Thread	->	Transfers Execution to Entry Point	->	main() Executes
 
@@ -51,10 +54,11 @@ Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
 			
 	Step 2 : Windows Loads The Executable into RAM
 		Windows identifies the .exe file as an executable program.
-		Before execution can begin, Windows loads the executable image from secondary storage (SSD/HDD) into RAM.
+		Windows prepares the executable and required libraries in the process's virtual address space.
 
-		Reason	:	The CPU executes instructions from memory (RAM), not directly from disk.
-		
+		Reason:
+			The CPU executes instructions through memory, while the Operating System manages how program code and data are mapped into the process's address space.
+
 	Step 3 : Windows Creates A Process
 		An executable (.exe) is only a file stored on disk. It is NOT a running program.
 		
@@ -64,12 +68,14 @@ Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
 				Process   -> Running Program
 		
 		A Process is a running instance of a program. During process creation Windows initializes :  Program Code | Stack | Heap | Global Variables | Primary Thread | Handles | Environment
-		These resources do not exist inside the .exe file. They are created only when the process starts.
+		These are runtime resources associated with the process. They are not already-created runtime objects stored inside the EXE.
+		They are created only when the process starts.
 	
 	Step 4 : Windows Transfers Control To The Entry Point
-		After the process is initialized, Windows transfers execution to the program's entry point.
-		For a Kotlin/JVM Desktop application, execution eventually reaches :  fun main(args: Array<String>)
-		
+		After the process is initialized, execution eventually reaches the program's entry point.
+		For a Kotlin/JVM Desktop application, execution eventually reaches:
+			fun main(args: Array<String>)
+			
 		At this stage:
 
 			✓ Process is running.
@@ -88,7 +94,7 @@ Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
 		No Window Exists Yet		<-		main() Starts Executing		<-		Transfers Execution to Entry Point		<-		Initializes[Program Code / Stack / Heap / Global Variables / Primary Thread / Handles / Environment Information]
 						
 			
-********************************* CHAPTER 2 — Windowing System [Who actually creates the first window?] *********************************
+********************************* B. WINDOWING SYSTEM *********************************
 
 --> What Is A Windowing System?
 		It is a part of the Operating System for creating and managing graphical windows.
@@ -100,7 +106,7 @@ Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
     Reason : Not every application requires a GUI.
 		Examples : Git | Compiler | Ping | CMake
 
-    Rule : A process does NOT automatically get a Window.The application must request Windows OS to create one.
+    Rule : A process does NOT automatically get a Window.The application must request the Operating System/windowing system to create one.
 
 --> Who Creates The Window?
 		Application does NOT create the Window.
@@ -110,54 +116,60 @@ Compose Multiplatform  					Android XML (Old)  						 Ktor/Spring
 --> Windows API
 		The Operating System exposes functions that applications use to communicate with Windows.
 			Examples : CreateWindow() | DestroyWindow() | ShowWindow() | MoveWindow() 
-			Think    : Just like we call class methods, applications call Windows APIs.
-
+			
+		Think : Windows API = Interface through which applications/frameworks request Operating System functionality.
+		
 --> Native Window
-	The actual window displayed on the screen is called a Native Window.belongs to Operating System.Every visible desktop window is a native operating system object.
+	The actual desktop window is an OS-managed native window.
+	The application/framework requests the Operating System to create it and can then interact with it through platform APIs.
 
 --> Window Handle (HWND)
-		Windows does NOT return the actual Window object.	
-		It returns : HWND (Window Handle)
+		Windows identifies a native window using a handle.
+		It is commonly represented by HWND in Win32 programming.
+
 		Applications use this handle whenever they want Windows to perform another operation.
 		Example : HWND	->	MoveWindow()
 		
 		Think :  HWND = Window ID / Window Reference
 
 --> Why Doesn't Windows Return The Actual Window?
-	If applications directly modified internal Window objects, they could corrupt the Operating System.
+	Applications interact with the native window through an OS-defined handle/API instead of directly manipulating the Operating System's internal window object.
+
+	This protects the Operating System's internal implementation and prevents applications from directly modifying its internal structures.
 
 
 --> Event Driven Programming
 	Console programs execute sequentially.
 		Example Console Application Works : Step 1 -> Step 2 -> Step 3 -> Exit
 
-    Desktop Application : User decides execution flow.
-        Example : Click Button | Press Key | Resize Window | Move Window
+    Desktop Application : User interaction can determine when different actions occur.
+		Example : Click Button | Press Key | Resize Window | Move Window
 
 
 --> What Is An Event?
-	An Event is an action that occurs while the application is running.
+	An Event is an action or occurrence that the application can respond to while it is running.
 		Examples	:	Mouse Click		|	Mouse Move
 
 		
 --> Message Queue
-		Windows OS receives hardware events.
+		Windows receives hardware/input events.
 		Examples : Mouse Click | Keyboard Press | Window Resize
 
-    Windows converts them into Messages. These Messages are stored inside : Message Queue (Memory)
+    Windows delivers relevant events to applications through messages/events.
+	These messages can be queued and processed by the application.
 
 --> Message Flow
-		User Clicks Mouse -> Windows OS Detects Event -> Create Message -> Store in Message Queue -> Application Reads Message -> Process Message
+		User Clicks Mouse -> Windows OS Detects Event -> Creates/Dispatches Message -> Application Receives Message -> Processes Message
 
 --> Message Loop
-	Desktop applications should continue running after creating a window.
-	Therefore they continuously check for new messages.This continuous loop is called the Message Loop.
+	Desktop applications need to continue running and process incoming events after creating a window.
+	A traditional Windows desktop application uses a Message Loop to continuously retrieve and process messages.
 
 
 
 ********************************* FLOW OF CHAPTER 1 AND 2 *********************************
 
-User Double Clicks EXE  ->  Windows Operating System  ->  Loads EXE into RAM  ->  Creates Process  ->  Creates Stack, Heap, Thread...  ->  Calls main()
+User Double Clicks EXE  ->  Windows Operating System  ->  Loads EXE into RAM  ->  Creates Process  ->  Initializes Process Resources -> Starts  ->  Calls main()
 																																				│
 																																				│
 																																				│
@@ -166,45 +178,52 @@ User Double Clicks EXE  ->  Windows Operating System  ->  Loads EXE into RAM  ->
 		│
 		│
 		│
-		│										──────── Runtime ────────
-		│-->  Application Starts Message Loop  ->  User clicks mouse  ->  Windows receives event  ->  Creates Message  ->  Stores Message in Message Queue
-																																				│
-																																				│
-																																				│
-																																				│
-																				Application processes Message <-  Application reads Message  <--│
+		│																──────── Runtime ────────
+		│-->  Application/UI Framework Processes User Interaction ->  User clicks mouse  ->  Windows receives event  ->  Creates/Dispatches Message -> Application/Framework Receives Message
+																																								│
+																																								│
+																																								│
+																																								│
+																								Application processes Message <-  Application reads Message  <--│
 
 
-********************************* CHAPTER 3 — Why Do We Need a UI Framework? *********************************
+********************************* C. WHY DO WE NEED A UI FRAMEWORK? *********************************
 
 --> Why WE need Compose(framework) if Windows(OS) already provides API like : CreateWindow(), ShowWindow(), MoveWindow() becuase We can directly use that API into our Kotlin Application 
-		1. A UI Framework does not add new capabilities to the operating system. It provides a higher-level abstraction over the low-level APIs.
-		2. Windows already has all the capabilities. Compose provides a much easier and more organized way to use those capabilities.
 		
+		1. A UI Framework does not replace the Operating System. It provides a higher-level abstraction over low-level APIs.
+		2. Windows already provides the fundamental capabilities. Compose provides a much easier and more organized programming model for using those capabilities.
+		3. A UI Framework reduces the amount of platform-specific and repetitive code developers need to write.
+
 		Example without Compose :	Create Button | Set Width  | Set Height | Set Font | Set X Position | Set Y Position		Lots of Works
 		
 		Example of Compose 		:	
-					Button(
+					Button(	
 						modifier = Modifier.padding(16.dp)
 					)
-					Compose internally calculates : Position | Size | Drawing | Layout | Recomposition and then eventually communicates with the operating system.
+			Compose handles many UI concerns such as : Layout | Measurement | Drawing | Input/Event Handling | UI Updates
+	
+			Compose does not replace the Operating System.
+			For a desktop application, the framework ultimately integrates with the platform's native windowing system.
+
 		
 --> Compose was created because writing directly with low-level APIs becomes:
-		Too much code
-		Difficult to maintain
-		Difficult to adapt to different screen sizes
-		Difficult to reuse UI components
+		Too much code	|	Difficult to maintain	|	Difficult to adapt to different screen sizes	|	Difficult to reuse UI components
 		
 --> Can Kotlin Create UI?		-	   NO.
-		Kotlin is only a programming language.
+		Kotlin is only a programming language, not a UI toolkit.
 		
-		Kotlin provides 		:  Variables | Functions | Classes | Coroutines | Collections 
-		It does NOT provide		:  Window |  Button | TextField | Image | Row | Column
+		Kotlin provides 				:  Variables | Functions | Classes | Coroutines | Collections 
+		It does NOT itself provide		:  Window |  Button | TextField | Image | Row | Column
 
 		To create Desktop UI, Kotlin can use: : Compose Desktop / JavaFX / Swing
 
 --> Can C++ Create UI?		-	   NO.
-	C++ applications also require : Win32 API	|	MFC	|	Qt	|	wxWidgets
+	
+	C++ is a programming language.
+	C++ applications also require a UI technology/framework or platform API.
+
+	Examples	:	Win32 API | MFC | Qt | wxWidgets
 		
 --> Problems with Win32 API
 		Win32 API is a low-level API. It provides maximum control but requires a large amount of manual work.
@@ -217,7 +236,7 @@ User Double Clicks EXE  ->  Windows Operating System  ->  Loads EXE into RAM  ->
 --> Why Do We Need A UI Framework?
 		Instead of working directly with low-level APIs, developers use a UI Framework.
 		
-		Instead of writing low-level code, it provides high-level components.
+		Instead of writing low-level code, it provides high-level components and abstractions.
 			Examples :  Window |   Button |  Text |   TextField |  Image |  Menu
 			
 --> Responsibilities Of UI Framework
@@ -225,11 +244,11 @@ User Double Clicks EXE  ->  Windows Operating System  ->  Loads EXE into RAM  ->
 
 	Responsibilities : Create UI Components.  | Manage Layout | Handle Events |  Draw UI |  Manage UI State | Hide Platform Specific APIs
 	
---> Does A UI Framework Replace The Operating System?	No
-	The Operating System still creates : Native Windows	|	Mouse Events	|	Keyboard Events
-	The framework simply communicates with the Operating System on behalf of the application.
+--> Does A UI Framework Replace The Operating System?		-	No
+	The Operating System still provides : Native Windows	|	Mouse Events	|	Keyboard Events
+	The framework communicates with the Operating System and provides a higher-level API to the application developer.
 
-********************************* Chapter 4 — Evolution of Desktop UI *********************************
+********************************* D. EVOLUTION OF DESKTOP UI *********************************
 --> Desktop UI Architecture
 
         Application		->		UI Framework		->		Native API		->		Operating System
@@ -345,10 +364,9 @@ Layer 3 - UI Framework
 		
 --> Compose Multiplatform
 
-    Developed by JetBrains.
-	
-	JetBrains extended the Jetpack Compose programming model so the same UI code can run on multiple platforms.
-	
+	Developed and maintained by JetBrains as a multiplatform UI framework based on the Compose programming model.
+	Compose Multiplatform allows developers to share Compose UI code across supported platforms.
+
 	Targets:
 		Android
 		Desktop (Windows, Linux, macOS)
@@ -358,20 +376,12 @@ Layer 3 - UI Framework
 	Current Project :    Desktop Target (Windows)
 
 
+------------------------------------------------------------------------------------------------------------
 
-###########################################################################################################################################
-############################################### MODULE 1 : COMPOSE MULTIPLATFORM ##########################################################
 
-********************************* CHAPTER 5 — What Exactly Is Compose Multiplatform *********************************
+####################################### Module 1: What Compose Multiplatform is and how Compose works conceptually ##########################################################
 
---> Before Learning Compose Multiplatform
-	Kotlin is a Programming Language.
-	A Programming Language cannot create UI by itself.
-	We need a UI Framework to build graphical user interfaces.
-	
-	So now Which UI Framework are we using in our project?	:
-		Compose Multiplatform
-
+********************************* A. WHAT EXACTLY IS COMPOSE MULTIPLATFORM *********************************
 
 What is a Framework? 	-	A framework is a collection of pre-written code, libraries, and rules that helps you build applications faster.
 	Examples: Kotlin
@@ -382,53 +392,35 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 				└── Spring Boot (Backend Framework for Java/Kotlin)
 
 --> What is Compose Multiplatform
-	Compose Multiplatform is a UI Framework developed by JetBrains for building graphical user interfaces using Kotlin.
-	It provides everything required to build a modern user interface.
-	Examples : Window | Button | Text | TextField
 	
-	Instead of creating these components manually using operating system APIs, we simply use the components provided by Compose.
-	Example:
-		Button(onClick = { })
-		{
-			Text("Login")
-		}
-	Compose internally communicates with the operating system.
-		
---> Why Was Compose Multiplatform Created?
-	Before Compose Multiplatform, different platforms used different UI frameworks.
-		
-		Example:
-			Windows Desktop      → Win32 API / MFC / Swing / JavaFX
-			Android            	 → XML
-			iOS                	 → SwiftUI / UIKit
-			Web                	 → HTML + CSS + JavaScript
+	Compose Multiplatform is a modern declarative UI framework developed by JetBrains.
+	It allows developers to build user interfaces using Kotlin and share UI code across multiple supported platforms.
+	Instead of creating completely separate UI implementations for each platform, we can share a large portion of the UI code.
+
+	Conceptually:
+
+		Kotlin + Compose Multiplatform
+					↓
+			Shared UI Code
+					↓
+			┌─────────┼─────────┐
+			↓         ↓         ↓
+		Android    Desktop     iOS
+			↓         ↓         ↓
+		Platform-specific implementation underneath
 	
-		Every platform required learning a completely different way of building UI.
-		So JetBrains wanted developers to use Kotlin to build applications for multiple platforms while writing as much shared code as possible.
-		
-		So they created  Compose Multiplatform :
-			It supports multiple platforms called Targets. 
-				Compose Multiplatform
-				│
-				├── Android Target
-				├── Desktop Target
-				├── iOS Target
-				└── Web Target (Experimental)
-		
-		--> Desktop Target
-			Desktop Target allows us to build applications for : Windows | Linux | macOS
-		
-		--> Android Target
-			Android Target allows the same Compose programming model to run on Android.Instead of writing XML,we write UI using Kotlin.
-			
-		--> iOS Target
-			Compose Multiplatform also supports iOS.The UI is still written using Kotlin.Platform-specific code can still be added whenever required.	
+	Compose Multiplatform does NOT mean that every platform internally works exactly the same way.
+	The goal is to share UI/application code while Compose and the platform integration handle the differences underneath.
+
 		
 --> What Is A UI Toolkit?
-	A UI Toolkit is a collection of reusable UI components, drawing logic, layout systems and utilities that help developers build graphical user interfaces.
-	Instead of creating everything from scratch, we simply use the tools provided by the toolkit.
-	
-	Example : Button | Text | Column | Row | Image | Window | Modifier | MaterialTheme
+	A UI Toolkit is a collection of APIs and components used to build graphical user interfaces.
+
+	It usually provides things such as : Text | Button | TextField | Image | Layout | Input Handling | Styling | Rendering
+
+	Example : Compose	|	JavaFX	|	Swing	|	Qt
+
+	Think : UI Toolkit = Tools used to build UI.
 	
 	
 --> UI Toolkit vs UI Framework
@@ -439,6 +431,111 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 	Compose Multiplatform provides all of these.
 
 
+--> Compose Multiplatform vs Jetpack Compose
+
+	Jetpack Compose:
+
+		• Developed by Google.	|	• Primarily designed for Android UI.	|	• Uses Kotlin.	|	• Provides a declarative UI programming model.
+
+	Compose Multiplatform:
+
+		• Developed and maintained by JetBrains.	|	• Builds on the Compose programming model.	|	• Extends Compose UI development to multiple platforms.
+		• Uses Kotlin.	|	• Allows UI code to be shared across supported platforms.
+
+	Think:
+		Jetpack Compose			->			Android-focused
+
+		Compose Multiplatform	->			Multiplatform UI
+
+--> Why JetBrains created Compose Multiplatform?
+
+	Developers often want to build applications for multiple platforms without writing the entire UI separately for each platform.
+
+	Without shared UI:
+		Android UI	->	Separate Code
+		Desktop UI	->	Separate Code
+		iOS UI		->	Separate Code
+
+	With Compose Multiplatform:
+		Shared Compose UI	->		Multiple Platforms
+
+--> Compose Multiplatform Targets
+
+	Compose Multiplatform supports UI development for multiple platforms.
+	Common targets include : Android	|	Desktop	|	iOS		|	Web
+	
+--> Desktop Target
+	Compose Multiplatform can be used to create desktop applications.
+
+	Supported desktop operating systems include : 	Windows | Linux | macOS
+
+	Our application will primarily use : Compose Multiplatform	->	JVM/Desktop	->	Windows
+
+--> Android Target
+	Compose Multiplatform can share UI code with Android applications.
+
+	Conceptually:
+		Shared Compose UI	->	Android Platform	->	Android Application
+
+
+--> Shared UI Concept
+	Shared UI means that the same Compose UI code can be used across multiple platforms.
+
+	Example:
+
+		@Composable
+		fun LoginScreen() {
+			Column {
+				Text("Login")
+				Button(
+					onClick = { }
+				) {
+					Text("Login")
+				}
+			}
+		}
+
+	The same UI function can potentially be used by multiple supported platforms.
+
+	Conceptually:
+		LoginScreen()	->		Shared Compose UI	->		Android / Desktop / iOS
+
+
+	Important:
+		Shared does NOT mean that every single line of application code must be shared.
+		Platform-specific code may still be required when interacting with platform-specific APIs.
+
+--> Platform-specific UI Concept
+	Some functionality depends on the platform.
+
+	Example:
+		Windows-specific API	|	Android-specific API	|	iOS-specific API
+
+	In such cases we can keep the platform-specific implementation separate.
+
+	Conceptually:
+		Shared Code
+			│
+			├── Common UI
+			│
+			└── Platform-specific Code
+					├── Android
+					├── Desktop
+					└── iOS
+
+	Example:
+		Shared:
+			LoginScreen
+			HomeScreen
+			Button
+			Text
+			Layout
+
+		Platform-specific:
+			Windows API
+			Android API
+			iOS API
+			
 --> Declarative UI	vs Imperative UI
 
 	Declarative means : 
@@ -450,7 +547,7 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 		Flow : State Changes	->	Compose Detects Change	->	Recomposition	->	Updated UI
 		
 	Imperative means : 
-		Tell the framework how to perform every step.
+		Imperative UI means we explicitly tell the UI system HOW to perform operations.
 		Example : Suppose I want a Login Button
 			So we explained every step to Framework like : Create Window -> Create Button -> Set Width -> Set Height -> Set Color -> Set Position -> Draw Button
 		
@@ -462,233 +559,9 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 
 --> Why Is Compose Called Declarative?
 		Compose follows the Declarative UI approach.The developer describes what the UI should look like.Compose decides how to create and update that UI.
-			
-************************************************** CHAPTER 6 — Kotlin Prerequisites ***********************************************
---> Unit
-
-    Unit is a Kotlin return type that represents "No Return Value".
-
-    Similar to C++ :
-        C++        ->    void
-        Kotlin     ->    Unit
-
-    Example :
-        fun greet(): Unit {
-            println("Hello")
-        }
-
-    Since Unit is the default return type, Kotlin allows us to omit it.
-	
-	Both functions are equivalent.
-
-	fun greet(): Unit {
-		println("Hello")
-	}
-
-	fun greet() {
-		println("Hello")
-	}
-
-	The compiler automatically assumes the return type is Unit.
-
-    Meaning :
-
-        Unit
-            ↓
-        No Return Value
-
-		
---> Function Return Types
-
-	Every function may either :	 Return Nothing		|	Return a Value
-
-	General Syntax :
-		fun functionName(parameters): ReturnType {
-		}
-
-	Examples :
-		1. Return Unit
-			fun display() {
-				println("Hello")
-			}
-
-		2. Return Int
-			fun add(a: Int, b: Int): Int {
-				return a + b
-			}
-
-		3. Return String
-			fun getName(): String {
-				return "Abhinav"
-			}
-
-	Flow :
-		Function Executes
-				│
-				├── Return Nothing
-				│		 ↓
-				│		Unit
-				│
-				└── Return Value
-						 ↓
-					Int / String / Boolean / etc.
 
 
---> Expression Body Functions (=)
-
-	Normally we write :
-
-		fun add(a: Int, b: Int): Int {
-			return a + b
-		}
-
-	Kotlin provides a shorter syntax : fun add(a: Int, b: Int): Int = a + b
-
-	This is called an Expression Body Function.
-
-	Meaning :	"="	->	Return the result of this expression.
-	
-	Why was Expression Body introduced?
-		Many functions only return a single expression.
-		
-		Instead of writing :	return expression
-		we simply write    :	= expression
-		
-		This reduces Boilerplate Code.
-		
---> Lambda Expressions
-
-	A Lambda is an Anonymous Function.
-
-	Anonymous means :	The function has no name.
-
-	Normal Function :
-		fun greet() {
-			println("Hello")
-		}
-
-	Lambda :
-		{
-			println("Hello")
-		}
-
-	Notice :	The Lambda has no function name.
-	
---> Why do we need Lambdas?
-
-	Sometimes we need a small piece of code only once.Instead of creating a separate function, we create a Lambda.
-	
-	Example :
-		Button(
-			onClick = {
-				println("Clicked")
-			}
-		)
-		
---> Lambda Syntax
-
-	Lambda without Parameters :
-		{
-		}
-
-	Lambda with Parameters :
-		{ value ->
-			println(value)
-		}
-
-	The arrow ( -> ) separates :
-		Parameters
-			 ↓
-		Implementation
-		
---> Higher Order Functions
-
-	A Higher Order Function is a Function that :
-
-		• Accepts another Function as a Parameter.
-				OR
-		• Returns another Function.
-
-	Compose mainly uses the first one.
-	
-	Example :
-		fun execute(task: () -> Unit) {
-		}
-		task itself is another Function.So execute() is a Higher Order Function.
-		
---> Why are Higher Order Functions useful?	
-		Instead of deciding what work should be done, the function allows the caller to decide.
-		Example :
-			execute(
-				{
-					println("Hello")
-				}
-			)
-		The behaviour changes depending on the Lambda passed by the caller.
-		
---> Compose uses Higher Order Functions everywhere
-	Example : 
-		application {...}, 	Window {...}, Button {...}, MaterialTheme {...}, Column {...}
-		All of these functions accept another Function (Lambda).
-		
---> Trailing Lambda Syntax
-		If the LAST parameter of a function is a Lambda, Kotlin allows moving it outside the parentheses.
-		Instead of :
-			execute(
-				{
-				}
-			)
-		we can write :
-			execute {
-			}
-		This is called Trailing Lambda Syntax.
-		
---> Why was Trailing Lambda introduced?
-		
-		Without Trailing Lambda :
-			Button(
-				modifier = Modifier,
-				content = {
-				}
-			)
-
-		With Trailing Lambda :
-			Button(
-				modifier = Modifier
-			) {
-			}
-
-		It makes the code much easier to read.
-		
---> Function References (::)
-
-	Sometimes we don't want to execute a function immediately.Instead,we want to pass the Function itself.
-	Kotlin provides Function References using ::
-	
-	Example
-
-		Function :
-			fun closeApplication() {
-				println("Closing")
-			}
-
-			Calling the Function :	closeApplication()	The function executes immediately.
-
-		Function Reference :
-			Instead of executing it,we pass the Function itself.
-				::closeApplication			//There are no parentheses.
-			
-			Meaning : Pass the Function.Do NOT execute it now.
-			
-	--> Real Compose Example
-			Window(
-				onCloseRequest = ::exitApplication
-			)
-			
-			Meaning :
-				User Clicks Close Button	->	Compose calls	->	exitApplication()
-	
-************************************************** CHAPTER 7 — Compose Architecture ***********************************************
+************************************************** B. COMPOSE APPLICATION STRUCTURE ***********************************************
 
 --> application()
 	application() is a Function provided by Compose Multiplatform.
@@ -702,8 +575,15 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 			}
 		}
 	
-	When Windows(OS) starts our application, execution begins at : fun main(...) 
-		At this point : Process exists ✅ | main() is running ✅ | No window exists yet ✅
+	When Windows starts our application : 	
+		Windows OS ->	Process	->	JVM	->	main() -> application()
+		
+		At the point main() starts: 
+			✓ Process exists
+			✓ JVM is running 
+			✓ main() is executing 
+			✗ Compose Desktop UI has not been created yet 
+			✗ Native application Window has not been created yet
 	
 	So Who is responsible for starting the Compose environment?			-	Compose Multiplatform	
 	It cannot be : Windows OS | Kotlin | JVM
@@ -753,9 +633,42 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 			↓
 		Execute the Lambda
 
+--> Role of application()
+	application() provides the Compose Desktop application environment and manages the desktop application's lifecycle.
 
+	Inside application(), we can create one or more Compose Windows.
+
+	Example :
+		fun main() = application {
+
+			Window(
+				onCloseRequest = ::exitApplication
+			) {
+
+				App()
+
+			}
+		}
+
+
+	Conceptually :
+		main()
+		  ↓
+		application()
+		  ↓
+		Window()
+		  ↓
+		Compose UI
+	
+	application() is also a Higher-Order Function because it accepts a lambda containing the application's Compose code.
+	Example : 
+		application { 
+			// Compose Desktop application code 
+		} 
+	The code inside { } is the lambda passed to application().
+	
 --> Window()
-	Window() is a function provided by Compose Multiplatform.
+	Window() is a function provided by Compose Multiplatform for creating and configuring a Desktop Window.
 	It is also a Higher Order Function because its LAST parameter is a Lambda.
 	
 	Example :
@@ -769,41 +682,64 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 			App(app)
 		}
 	
-	--> Responsibility
-		Window()
-			↓
-		Request the Operating System
-			↓
-		Create a Native Desktop Window
-	
-	--> Who Actually Creates the Window?
-		Compose DOES NOT create the Window. Windows Operating System creates the actual window.
-		Window() only requests the Operating System to create it.
+		Window() also accepts a lambda as its content. 
+		The lambda describes the Compose UI that should be displayed inside the Window.
 		
-	--> Why Does Window() Accept a Lambda?
-		Compose creates only the native window.
-		It doesn't know what UI should appear inside that window.
-		So we pass a Lambda describing the UI.
+	--> Role of Window()
+		Window() connects the Compose application with the platform's Desktop Windowing System.
+
+		Conceptually :
+			Window()
+				↓
+			Platform Windowing System
+				↓
+			Operating System
+				↓
+			Native Desktop Window
+
+		Important :
+			Compose does not replace the Operating System's Windowing System.
+			The actual native Desktop Window is ultimately created and managed through the platform's windowing system.
+			Window() provides the Compose API through which our application configures and hosts UI in that Desktop Window.
 
 		Example :
 			Window {
-				App(app)
+				App()
 			}
 
-		This means : Display App(app) inside this Window.
-	
-	Note :
-		Window = Native Desktop Window (Container)
-		The Lambda passed to Window() describes the UI that should be displayed inside that Window.
+		Meaning :
+			Create/configure a Desktop Window
+					+
+			Display App() as the Compose content inside it.
+		
+	--> Why Does Window() Accept a Lambda?
+		Window() needs to know what Compose UI should be displayed inside the Window.
+
+		So we provide the UI as a lambda.
+
+		Example :
+			Window {
+				App()
+			}
+
+		The lambda:
+			{
+				App()
+			}
+
+		describes the Compose content of the Window.
+		
+		Think : 
+			Window() -> Where the UI is displayed 
+			Lambda -> What UI is displayed
 
 
 --> Scene()
-	Scene is an internal architectural concept of Compose.
-
-	After the Native Window is created,
-	Compose creates an area where it can manage and render the UI.
-
-	That area is called a Scene.
+	Scene is an internal architectural concept used by Compose Desktop.
+	After the Desktop Window is created, Compose needs an environment in which it can manage and render the Compose UI associated with that Window. 
+	This Compose-managed environment is referred to as a Scene.
+	
+	Conceptually : Native Desktop Window -> Compose Scene -> Compose UI -> App() -> Composable Functions
 	
 	EXAMPLE: 
 		+-----------------+
@@ -819,107 +755,382 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 		App()	|	MainScreen()	|	Buttons() |  Text()  |  Images
 		
 	--> Why do we need Scene?
-		Without Scene,
-		Compose would have to draw directly on the Native Window.
-		This would tightly couple :
-
-		Window Management
-				AND
-		UI Rendering
+		The Native Window is responsible for the platform-level Window.
+		Compose is responsible for managing and rendering the Compose UI.
+		The Scene provides the connection/environment between these two layers.
 		
-		Scene separates these responsibilities.
-	
-	Responsible for  : 	Render and manage the Compose UI inside the Native Window.
-	
---> Composition
-	Scene is initially empty.
-	Compose builds the complete UI inside the Scene.
-	This process is called Composition.
-	
-	Example :
-		Login Screen
-		├── Title
-		├── Username TextField
-		├── Password TextField
-		└── Login Button
+--> Relationship between application(), Window(), Scene and UI
 
-	Compose combines these small UI pieces into one complete UI.
-	This combining process is called Composition.
+	Complete structure :
 
-	Composition means :
-		Building the UI structure.
-		It does NOT mean drawing pixels on the screen.
-	
---> Composable
-	A Composable is a Function that describes a piece of UI.
-	It is marked using :
+		fun main() = application {
+			Window(
+				onCloseRequest = ::exitApplication
+			) {
+				App()
+			}
+		}
+
+
+	Conceptual flow :
+		main()	->	application()	->	Window()	->	Native Desktop Window	->		Compose Scene	->	App()	->	Composable UI
+
+
+	Each part has a different responsibility :
+
+		main()					→ Application Entry Point
+		application()			→ Compose Desktop Application Environment / Lifecycle
+		Window()				→ Desktop Window Configuration and Compose Content Host
+		Scene					→ Compose-managed environment connecting the native window with Compose UI
+		App()					→ Application's UI Root
+		Composable Functions	→ Describe individual pieces of UI
+
+
+********************************* C. COMPOSE MENTAL MODEL *********************************			
+
+--> What is a Composable?
+	A Composable is a function that participates in Compose's UI composition system.
+	It describes a piece of UI or UI-related behavior.
+
+	Example:
 		@Composable
-		
-	Example :
+		fun Greeting() {
+			Text("Hello")
+		}
 
-		@Composable				@Composable					@Composable
-		fun Header() { }		fun Body() { }				fun Footer() { }
 
+	Think : Composable = A building block of Compose UI.
+
+
+--> Composable Function
+	A Composable Function is a Kotlin function marked with @Composable.
+
+	Example: 
 		@Composable
 		fun MainScreen() {
+		Text("Welcome")
+		Button( onClick = { } )
+			{ 
+				Text("Login")
+			} 
+		}
+
+	A Composable function can call other composable functions.
+
+	Example:
+		@Composable 
+		fun MainScreen() { 
 			Header()
-			Body()
+			Body() 
 			Footer()
 		}
-		Compose combines these Composable Functions during Composition.
-		
-		Responsibility :
-			Describe a reusable piece of UI that can participate in Composition.
-
-
---> State	
-	State is the current data (current value) that determines what the UI should display.
-		Example :	var count = 0
-
-	Current State :	count = 0
-	After 		  :	count++
-
-	New State :	count = 1
 	
-	--> Why Is State Important?
-		Compose follows Declarative UI.
-		The Developer changes the State.
-		Compose detects the State change and updates the UI automatically.
+	Responsibility :  Describe a reusable piece of UI that can participate in Compose Composition.
 
-	--> State vs UI
+--> @Composable — basic meaning
+	@Composable is an annotation used by Compose to identify functions that participate in the Compose composition model.
+
+	Example:
+		@Composable
+		fun App() {
+			Text("Hello")
+		}
+
+
+	Important:
+		@Composable is not simply a normal annotation that means "this function is UI."
+		The Compose compiler/plugin processes composable functions so that they can work with the Compose Runtime.
+
+	Basic Flow:
+		@Composable
+				↓
+		Compose Compiler
+				↓
+		Compose Runtime
+				↓
+		Composition / Recomposition
+
+
+	Important Rules:
+		A Composable Function can call another Composable Function.
+		A normal Kotlin Function cannot directly call a Composable Function because it does not have a Compose composition context.
 		
-		State ≠ UI
+--> Composition
+	Composition is the process in which Compose executes composable functions and builds the current UI structure described by them.
 
-		State	→	Data
-		UI		→	Display of the current State
+	Example:
+		@Composable
+		fun App() {
+			Column {
+				Text("Hello")
+				Button(
+					onClick = { }
+				) {
+					Text("Click")
+				}
+			}
+		}
 
-	Example :
-		count = 5		→		Counter : 5
-		count = 6		→		Counter : 6
-			
-			
-	Flow :
+	Composition means:
+		Building and managing the UI structure from Composable Functions.
+
+	Important:
+		Composition is NOT the same as drawing pixels on the screen.
+		Composition determines and manages the structure of the Compose UI.
+		Measurement, layout, and drawing are separate stages of rendering.
+
+
+--> Composition Tree
+	The Composition Tree represents the hierarchical structure created by composable functions during composition.
+
+	Example:
+		@Composable
+		fun App() {
+			Column {
+				Text("Hello")
+				Row {
+					Text("Name")
+					Button(
+						onClick = { }
+					) {
+						Text("Save")
+					}
+				}
+			}
+		}
+
+	Conceptually:
+		App
+		 ↓
+		Column
+		 ├── Text("Hello")
+		 │
+		 └── Row
+			  ├── Text("Name")
+			  │
+			  └── Button
+				   └── Text("Save")
+
+	Think:
+		Composable Functions
+				↓
+		Composition
+				↓
+		Composition Tree
+		
+	The Composition Tree allows Compose to keep track of the structure and relationships involved in the UI.
+
+--> State
+	State is data whose current value can change during the lifetime of the application and whose change can affect the UI.
+
+	Example:
+		count = 0				//Previous State
+
+	After an action:	
+		count = 1				//New State
+
+
+
+	In Compose, observable UI state can be created using : mutableStateOf()
+
+	Example:
+		var count by remember {
+			mutableStateOf(0)
+		}
+
+
+	Think:
+		State = Current data that can affect the UI.
+
+--> UI as a Function of State
+
+	The fundamental Compose idea is:
+		UI = f(State)
+
+	Meaning:
+		The UI shown by the application depends on the current State.
+
+	Example:
+
+		var count by remember {
+			mutableStateOf(0)
+		}
+
+		Text("Count = $count")
+
+
+	When:
+		count = 0
+		UI:
+			Count = 0
+
+
+		count = 1
+		UI:
+
+			Count = 1
+
+
+	Think:
+
+		State Changes
+				↓
+		Compose observes change
+				↓
+		Relevant UI is recomposed
+				↓
+		UI reflects new state
+
+--> Relationship between State and UI
+
+	State ≠ UI
+
+	State	→	Data
+	UI		→	Visual representation based on current State
+
+	The developer changes the State.
+	Compose observes the relevant state and updates the UI representation when necessary.
+	
+--> Recomposition
+	Recomposition is the process where Compose re-executes relevant composable functions when observed state changes.
+
+	Example:
+
+		@Composable
+		fun Counter() {
+
+			var count by remember {
+				mutableStateOf(0)
+			}
+
+			Button(
+				onClick = {
+					count++
+				}
+			) {
+				Text("Count = $count")
+			}
+		}
+
+
+	Initial:
+
+		count = 0
+		↓
+		Text("Count = 0")
+
+
+	User clicks Button:
+
+		count++
+		↓
+		count = 1
+		↓
+		Recomposition
+		↓
+		Text("Count = 1")
+
+
+	Important:
+
+		Recomposition does NOT mean that the entire application is destroyed and rebuilt from zero.
+		Compose uses information about the existing composition to determine which parts need to be re-executed.
+
+--> How Compose builds UI
+
+	At a simplified conceptual level:
+
+		1. Application starts.
+		2. Compose starts its runtime/composition.
+		3. Root composable is executed.
+		4. Root composable calls child composables.
+		5. Compose records/manages the composition.
+		6. UI is rendered on the screen.
+
+
+	Example:
+
+		App()
+		 ↓
+		LoginScreen()
+		 ↓
+		Column()
+		 ├── Text()
+		 └── Button()
+
+
+	Compose uses this composable structure to manage the UI.
+
+--> How Compose updates UI
+
+	At a simplified conceptual level:
+
+		State Changes 
+			↓
+		Compose detects the State change 
+			↓
+		Relevant Composable Functions are scheduled for Recomposition
+			↓ 
+		Composable Functions execute again as needed 
+			↓ 
+		Compose determines the required UI changes 
+			↓ 
+		Layout / Rendering is updated 
+			↓
+		UI reflects the new State
+
+
+	Example:
+
+		count = 0
+				↓
+		Text("Count = 0")
+
+		User clicks
+				↓
+		count = 1
+				↓
+		Recomposition
+				↓
+		Text("Count = 1")
+	
+	Important: 
+		"Only affected Composables execute again" is a useful simplified mental model. 
+		In reality, Compose uses the Composition and compiler/runtime information to determine the scope of recomposition, and the exact amount of code re-executed can depend on the composition structure and state reads.
+
+--> Compose Runtime — basic concept
+
+	Compose Runtime is the underlying runtime system that manages the composition and state-driven UI updates.
+
+	It provides the mechanisms needed for concepts such as:
+		Composition	|	State Observation	|	Recomposition	|	Remembered Values	|	Composition Management
+
+
+	Think:
+
+		Composable Functions 
+			↓
+		Compose Compiler 
+			↓
+		Compose Runtime
+			↓
+		Composition 
+			↓
 		State Changes
 			↓
-		Compose Detects State Change
-			↓
-		Compose Updates UI	
+		Recomposition 
+			↓ 
+		UI Update
 
---> Recomposition
-	Recomposition is the process of re-executing only the affected Composable functions after a State change.
-	Compose does NOT rebuild the entire UI.
-	It updates only the affected Composables
-	
-	Flow :
-			State Changes
-			↓
-			Compose Detects State Change
-			↓
-			Recomposition
-			↓
-			Affected Composable Functions Execute Again
-			↓
-			Updated UI
+
+	Important:
+
+		Compose Runtime is not the same thing as the UI components themselves.
+
+		Runtime manages the composition model.
+
+		UI libraries provide components such as : Text | Button | Column | Row | Box
+
 			
 ************************************************** Desktop Application Startup  Flow ************************************************** 
 
@@ -937,13 +1148,16 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 																																		↓
 										Updated UI		<--		Only Affected Composable Functions Execute Again		<--		Recomposition	
 	
-	
-############################################### MODULE 2 : COMPOSE FUNDAMENTALS ##########################################################
+------------------------------------------------------------------------------------------------------------
 
+
+####################################### Module 2: How to write and configure basic Compose code. ##########################################################
+
+********************************* A. COMPOSE SYNTAX & ANNOTATIONS *********************************
+	
 --> What is an Annotation?	
-	An annotation is metadata[Data about Data].Read by Compiler / Framework / Tools
+	An annotation is metadata[Data about Data].
 	It provides extra information about a program element.	It does NOT change the actual code.
-	An annotation is not executable code.It is information attached to something.
 	
 		Example :
 		
@@ -955,8 +1169,7 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 	
 	--> Why do we need Annotations?
 
-		Without Annotations,
-		the Compiler or Framework would not know that something requires special processing.
+		Without Annotations, the Compiler or Framework would not know that something requires special processing.
 		Annotations allow us to mark code with additional information.
 	
 	--> Who Reads The Annotation?
@@ -968,13 +1181,11 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 		It is only additional information attached to a program element.
 		
 	--> Is Annotation A Kotlin Feature?
-	
 		YES.
 		Annotations are a built-in Kotlin language feature.
 		
 		We can even create our own Annotation.
 		Example :
-
 			annotation class MyAnnotation
 
 		Usage :
@@ -991,46 +1202,118 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 
 	
 --> @Composable
-	
-	@Composable is a Compose Annotation.
-	It marks a Function as a Function that describes UI.
+	`@Composable` is an annotation used to mark a function as a Composable function.
 	Example :
 		@Composable
-		fun App() {
-
+		fun Greeting() {
+			Text("Hello")
 		}
-	The function is still a normal Kotlin Function.
-
-	The Annotation tells Compose :
-		"This Function describes UI and can participate in Composition."
+	The function is still a normal Kotlin Function, but @Composable makes it participate in the Compose composition model.
 	
+	 The Annotation tells Compose :
+        "This Function participates in the Compose UI system  and can be used during Composition."
 
 	--> Why do we need @Composable?
 		Without @Composable, Compose treats the Function as a normal Kotlin Function.It cannot participate in Composition.
 		Compose does NOT recognize it as UI.
 
 	--> What happens after adding @Composable?
-		Compose Compiler Plugin recognizes the Annotation.
+		 The Compose Compiler Plugin processes Composable functions as part of the Compose compilation process.
 		Flow :
 			@Composable	->	Compose Compiler Plugin	->	Transforms the Function	->	Kotlin Compiler	->	Bytecode (.class)	->	JVM Executes	->	Compose Runtime uses it during Composition
 	
 	--> Is @Composable executable code?
-			NO.Like every Annotation,@Composable is only Metadata.It simply provides additional information.
+		NO.
+		`@Composable` itself is an Annotation. It does not contain the UI implementation.
+		It provides information that allows the Compose compiler and Compose runtime system to treat the function as a Composable.
 	
-	--> Who reads @Composable?
-		@Composable is mainly read by the Compose Compiler Plugin.
-		It tells the Compiler :
-			"This Function belongs to the Compose UI System."
+	--> Who processes @Composable?
+
+    The Compose compiler/plugin processes Composable functions during compilation.
+
+    The Compose runtime then manages their participation in Composition and Recomposition.
+
+    Conceptually :
+        @Composable	->	Compose Compiler	->	 Compose Runtime	->	 Composition / Recomposition
 	
 	Important rules:
 		A Composable function can call another Composable function.
 		A normal Kotlin function cannot directly call a Composable function.
 		@Composable is read by the Compose compiler/plugin to treat the function as part of the Compose UI system.
-				
---> @Preview
 	
-	@Preview is a Compose Annotation
+	--> Composable Function Parameters
+
+		A Composable function is still a Kotlin function, so it can have normal Kotlin function parameters.
+
+		Example :
+			@Composable
+			fun Greeting(name: String) {
+				Text("Hello $name")
+			}
+
+		Calling :
+			Greeting("Rahul")
+			
+	--> Multiple Parameters
+
+		Example :
+
+			@Composable
+			fun UserInfo(
+				name: String,
+				age: Int
+			) {
+				Text("$name is $age years old")
+			}
+
+		Calling :
+			UserInfo(
+				name = "Rahul",
+				age = 28
+			)
+
+		Parameter syntax is normal Kotlin syntax.
+	
+	--> Reusable Composable Functions
+
+    A Composable function can represent a small, meaningful, reusable part of the UI.
+
+    Example :
+        @Composable
+        fun LoginButton() {
+            Button(
+                onClick = {}
+            ) {
+                Text("Login")
+            }
+        }
+
+    We can call :
+        LoginButton()
+
+    We can also make the Composable configurable.
+
+    Example :
+        @Composable
+        fun LoginButton(text: String) {
+            Button(
+                onClick = {}
+            ) {
+                Text(text)
+            }
+        }
+
+    Then :
+        LoginButton("Login")
+        LoginButton("Sign In")
+        LoginButton("Continue")
+		
+		
+--> @Preview
+	`@Preview` is an Annotation used by supported Compose development tools to display a preview of a Composable.
 	It tells the IDE to render a preview of a Composable without running the entire application.
+	@Preview is added when we want a development-time preview.
+	
 	Example :
 		@Preview
 		@Composable
@@ -1038,14 +1321,19 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 
 		}
 
+
+********************************* B. MODIFIER *********************************
+
 --> Modifier
-	A Modifier is an object that describes how a UI Component should look or behave.
+	A `Modifier` is an object used to describe changes to a Composable's appearance, layout, position, interaction, or behavior.
 	It does NOT create UI.
 	It modifies existing UI.
 	
 	Example : 
-		Button(
+		 Text(
+			text = "Hello",
 			modifier = Modifier
+				.padding(16.dp)
 		)
 	
 	Meaning :
@@ -1063,6 +1351,33 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 	Instead of giving every UI Component dozens of parameters,
 	Compose groups common UI modifications into one object called Modifier.
 	
+	--> Modifier is commonly passed to a Composable through a modifier parameter
+		Here:
+			modifier = Modifier.padding(16.dp)
+
+	--> Reusable Composable
+
+		When creating our own Composable, it is a good practice to expose a `modifier` parameter when the caller may need to control its layout or appearance.
+
+		Example:
+			@Composable
+			fun UserName(
+				name: String,
+				modifier: Modifier = Modifier
+			) {
+				Text(
+					text = name,
+					modifier = modifier
+				)
+			}
+
+		Now the caller can decide how the Composable should be modified.
+
+		Example:
+			UserName(
+				name = "Rahul",
+				modifier = Modifier.padding(16.dp)
+			)
 	--> Method Chaining
 		Each function returns another Modifier, allowing the next function to be chained.
 	
@@ -1084,22 +1399,82 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 					
 					means Take the previous Modifier and add another modification.
 					
-					
+	--> Modifier Order
+		The order in which Modifier operations are written can affect the resulting UI.
+
+		Example:
+			Modifier
+				.padding(16.dp)
+				.background(Color.Blue)
+
+		is not always equivalent to:
+
+			Modifier
+				.background(Color.Blue)
+				.padding(16.dp)
+				
+********************************* C. THEME *********************************				
+
+--> Material Components
+	Compose provides ready-made UI components such as:
+		• Button	|	  • TextField	|    • Checkbox	|	 • RadioButton	|	 • Card	|	 • TopAppBar	|	• Dialog
+
+	These components follow the Material Design system.
+
+	Instead of building a Button completely from scratch, we can use:
+
+		Button(
+			onClick = {}
+		) {
+			Text("Login")
+		}
+
+	So:
+
+		Material Components
+			  ↓
+		Ready-made UI components
+			  ↓
+		Faster UI development
+			  +
+		Consistent design
+
+--> Material Design
+	Material Design is a design system that defines common principles for UI appearance and behavior.
+
+	It includes things such as:
+		• Colors	|	 • Typography	|	• Shapes	|	• Component design	|	• Interaction behavior
+
+	Compose Material components use these design concepts.	
+	
 --> MaterialTheme
 
-	MaterialTheme is a Composable provided by Compose.
+	`MaterialTheme` provides theme information to the Composables inside it.
 	It provides a common UI style for all Composables inside it.
+	`MaterialTheme` is not required for Compose itself to work.Compose can create UI without MaterialTheme.However, if we are using Material components, MaterialTheme is commonly used to provide a consistent design.
 	
+	Example:
+		@Composable
+		fun App() {
+			MaterialTheme {
+				LoginScreen()
+			}
+		}
 	--> Purpose
 		Apply a common Theme to the application.
 		Examples :	• Colors	|	• Typography (Fonts)	|	• Shapes
 		
 	--> Example
 			MaterialTheme {
-				App()
+				Button(
+					onClick = {}
+				) {
+					Text("Login")
+				}
 			}
-		Meaning :	Apply the Theme to everything inside App().
-		
+
+		The Button and Text are inside the MaterialTheme, so Material components can use the theme's values.
+				
 	--> Why MaterialTheme?
 		Without MaterialTheme, every UI Component would need its own styling.
 		Example :
@@ -1108,24 +1483,21 @@ What is a Framework? 	-	A framework is a collection of pre-written code, librari
 			Button 3 → Color
 		Instead, define the Theme once and reuse it everywhere.
 			
-	--> Is MaterialTheme Mandatory?	
-		NO. It is optional.
-		However, almost every Compose application uses MaterialTheme because it provides a consistent look and feel.
-		
-		
-****************************************************************** State Management ******************************************************************
---> Compose follows Declarative UI.
 
-	The Developer changes the State.
-				↓
-	Compose automatically updates the UI.
+********************************* D. STATE BASICS *********************************		
+
+NOTE :
+	Compose follows Declarative UI.
+
+		The Developer changes the State.
+					↓
+		Compose automatically updates the UI.
 
 	State Management in Compose mainly consists of :
 		• mutableStateOf()	|	• remember()|	• by (Property Delegation)
 
 	These work together to manage and update UI State.	
 
-********************************* mutableStateOf()) *********************************	
 --> mutableStateOf()				- it notify when something change then Recomposition happen and compose get new value
 	
 	Creates a State Object with an initial value.

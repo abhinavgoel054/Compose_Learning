@@ -1,556 +1,384 @@
-############################################ Module 0 — Foundation ################################################
+############################################ MULTIPLATFORM COMPOSE ROADMAP ################################################
 
-********************************* Chapter 1 — Desktop Application Lifecycle  *********************************
 
-Topics:
+=========================== Module 0: Why a UI application needs a framework. ===========================
 
-	What is a Desktop Application?
-	Difference between EXE and Process
-	What happens after double-clicking an EXE?
-	Process creation
-	Memory loading
-	Entry Point (main())
-	Why no window exists yet
+----- A. DESKTOP APPLICATION LIFECYCLE -----
+
+[✓] What is a Desktop Application?
+[✓] Difference between EXE and Process
+[✓] What happens after double-clicking an EXE?
+[✓] Process creation
+[✓] Memory loading
+[✓] Entry Point (main())
+[✓] Why no window exists yet
 	
-********************************* Chapter 2 — Windowing System  *********************************	
-
-Topics:
-
-	What is a Windowing System?
-	Who actually creates a Window?
-	Windows API
-	Message Loop
-	Window Handle (HWND)
-	Why every Desktop OS provides a Windowing System
-	How mouse and keyboard events reach our application
-
-********************************* Chapter 3 — Why Do We Need a UI Framework?  *********************************	
-
-Topics:
-
-	Problems with Win32 API
-	Can Kotlin create UI?
-	Can C++ create UI?
-	What problems does a UI Framework solve?
-	Responsibilities of a UI Framework
-
-********************************* Chapter 4 — Evolution of Desktop UI *********************************	
-
-Topics:
-
-		Win32 API
-		↓
-		MFC
-		↓
-		Swing
-		↓
-		JavaFX
-		↓
-		Android XML
-		↓
-		Jetpack Compose
-		↓
-		Compose Multiplatform
-
-
 	
-############################################ MODULE 1 : COMPOSE MULTIPLATFORM ################################################
+----- B. WINDOWING SYSTEM -----
 
-********************************* CHAPTER 5 — What Exactly Is Compose Multiplatform *********************************
+[✓] What is a Windowing System?
+[✓] Who actually creates a Window?
+[✓] Windows API
+[✓] Message Loop
+[✓] Window Handle (HWND)
+[✓] Why every Desktop OS provides a Windowing System
+[✓] How mouse and keyboard events reach our application
 
-	Goal:	Understand Compose Multiplatform before learning its APIs.
 
-	Topics:
+----- C. WHY DO WE NEED A UI FRAMEWORK? -----
 
-		• What is Compose Multiplatform?
-		• What is a UI Toolkit?
-		• Compose Multiplatform vs Jetpack Compose
-		• Why JetBrains created Compose Multiplatform?
-		• Compose Multiplatform Targets
-		• Desktop Target (Our Project)
-		• Android Target
-		• Current Project Architecture
-		• Declarative UI
-		• Imperative UI
+[✓] Problems with Win32 API
+[✓] Can Kotlin create UI?
+[✓] Can C++ create UI?
+[✓] What problems does a UI Framework solve?
+[✓] Responsibilities of a UI Framework
 
-********************************* Chapter 6 — Kotlin Prerequisites *********************************
 
-	Goal:	Understand Kotlin syntax heavily used in Compose.
+----- D. EVOLUTION OF DESKTOP UI -----
 
-	Topics:
+[✓] Win32 API
+[✓] MFC
+[✓] Swing
+[✓] JavaFX
+[✓] Android XML
+[✓] Jetpack Compose
+[✓] Compose Multiplatform
 
-		• Unit
-		• Function Return Types
-		• Expression Body Functions (=)
-		• Lambda Expressions
-		• Higher Order Functions
-		• Trailing Lambda Syntax
-		• Function References (::)
 
-********************************* CHAPTER 7 — Compose Architecture *********************************
+=========================== Module 1: What Compose Multiplatform is and how Compose works conceptually. ===========================
 
-	Goal:	Understand how Compose Multiplatform works internally.
+----- A. WHAT EXACTLY IS COMPOSE MULTIPLATFORM -----
 
-	Topics:
+[✓] What is a UI Toolkit?
+[✓] What is Compose Multiplatform?
+[✓] Compose Multiplatform vs Jetpack Compose
+[✓] Why JetBrains created Compose Multiplatform?
+[✓] Compose Multiplatform Targets
+[✓] Desktop Target
+[✓] Android Target
+[✓] Shared UI concept
+[✓] Platform-specific UI concept
+[✓] Imperative UI
+[✓] Declarative UI
 
-		• application()
-		• Window()
-		• Scene
-		• Composition
-		• Composablewhy you 
-		• State
-		• Recomposition
 
-##############################################################################################################################
-############################################ MODULE 2 : COMPOSE FUNDAMENTALS ###############################################
+----- B. COMPOSE APPLICATION STRUCTURE -----
 
-Goal : Every import in Main.kt should become meaningful.
+[✓] application()
+[✓] Role of application()
+[✓] Window()
+[✓] Role of Window()
+[✓] Scene
+[✓] Relationship between application(), Window(), Scene and UI
+[✓] Basic Compose Desktop execution flow
 
-Topics :
 
-	• Annotation
-	• @Composable
-	• @Preview
-	• Modifier
-	• MaterialTheme
+----- C. COMPOSE MENTAL MODEL -----
 
-	********************************* State Management *********************************
+[✓] What is a Composable?
+[✓] Composable Function
+[✓] @Composable — basic meaning
+[✓] Composition
+[✓] Composition Tree
+[✓] How Compose builds UI
+[✓] State
+[✓] UI as a function of State
+[✓] Relationship between State and UI
+[✓] Recomposition
+[✓] How Compose updates UI
+[✓] Compose Runtime — basic concept
 
-	• mutableStateOf()
-	• remember()
-	• remember + mutableStateOf()
-	• by (Property Delegation)
-	• rememberWindowState()
 
-	********************************* Window *********************************
 
-	• Window() Parameters
+=========================== Module 2: How to write and configure basic Compose code. ===========================
 
-	********************************* application() *********************************
+----- A. COMPOSE SYNTAX & ANNOTATIONS -----
 
-	• application() Parameters
+[ ] Annotation in Compose
+[ ] @Composable — how to use it
+[ ] Composable Function Parameters
+[ ] Reusable Composable Functions
+[ ] @Preview
 
-##############################################################################################################################
-############################################ MODULE 3 : PROJECT FOUNDATION ############################################
 
-Goal :	Build a Compose Multiplatform Desktop project using the same technologies as the production project and understand every part before reading the production code.
+----- B. MODIFIER -----
 
-************************************************** Chapter 1 — Development Environment **************************************************
+[ ] What is Modifier?
+[ ] Modifier as a parameter
+[ ] Basic Modifier usage
+[ ] Modifier Chain
+[ ] Modifier Order
 
-Goal :	Understand every tool involved before creating the project.
 
-Topics:
+----- C. THEME -----
 
-	• IntelliJ IDEA
-	• JDK 11 (Production Version)
-	• JDK vs JRE vs JVM
-	• Gradle
-	• Kotlin Compiler
-	• Compose Compiler Plugin
-	• Compose Multiplatform Plugin
-	• Compose Runtime
-	• Dependency
-	• How Everything Connects
+[ ] Material Components — basic concept
+[ ] MaterialTheme
+[ ] Theme and UI styling
 
-*************************************************** Chapter 2 - Project Creation **************************************************************************
+
+----- D. STATE BASICS -----
+
+[ ] mutableStateOf()
+[ ] remember()
+[ ] remember + mutableStateOf()
+[ ] by — Property Delegation in Compose
+[ ] State change and Recomposition
+[ ] rememberWindowState()
+
+
+----- E. WINDOW CONFIGURATION -----
+
+[ ] Window()
+[ ] Window() Parameters
+[ ] WindowState
+
+----- F. APPLICATION CONFIGURATION -----
+
+[ ] application()
+[ ] application() Parameters
+
+
+=========================== Module 3 PROJECT FOUNDATION : Project setup and then production development. ===========================
+
+----- A. DEVELOPMENT ENVIRONMENT -----
+
+[ ] IntelliJ IDEA
+[ ] JDK 11 (Production Version)
+[ ] JDK vs JRE vs JVM
+[ ] Gradle
+[ ] Kotlin Compiler
+[ ] Compose Compiler Plugin
+[ ] Compose Multiplatform Plugin
+[ ] Compose Runtime
+[ ] Dependency
+[ ] How Everything Connects
+
+----- B. PROJECT CREATION -----
+
+	[ ] Current Project Creation Methods
+	[ ] Why Compose Project Wizard Changed
+	[ ] Official Project Generator
+	[ ] Generated Project Structure
+	[ ] Open Project
+	[ ] Gradle Sync
+	[ ] Run Generated Project
+
+	----- Manual Project Creation -----
+
+	[ ] Create Empty Folder
+	[ ] settings.gradle.kts
+	[ ] build.gradle.kts
+	[ ] gradle.properties
+	[ ] Gradle Wrapper
+	[ ] libs.versions.toml (if using Version Catalog)
+	[ ] Link Gradle Project
+	[ ] Gradle Import Flow
+	[ ] Create Main.kt
+	[ ] First Compose Application
 	
-Goal :	Learn both ways of creating a project.
-
-Method 1 — Official Project Creation
-
-Topics :
-
-	Current Project Creation Methods
-	Why Compose Project Wizard Changed
-	Official Project Generator
-	Generated Project Structure
-	Open Project
-	Gradle Sync
-	Run Generated Project
-
-------------------------------------------------------------
-
-Method 2 — Manual Project Creation
-
-Topics :
-
-	Create Empty Folder
-	settings.gradle.kts
-	build.gradle.kts
-	gradle.properties
-	Gradle Wrapper
-	libs.versions.toml (if using Version Catalog)
-	Link Gradle Project
-	Gradle Import Flow
-	Create Main.kt
-	First Compose Application
-
-------------------------------------------------------------
-
-Gradle Fundamentals
-
-Topics :
-
-	Gradle Tasks
-	Task Dependency
-	Application Packaging
-	Runtime Execution
 	
-*************************************************** Chapter 3 - Project Configuration **************************************************************************
+----- C. GRADLE FUNDAMENTALS -----
 
-Project Configuration
+[ ] Gradle Tasks
+[ ] Task Dependency
+[ ] Application Packaging
+[ ] Runtime Execution
 
-Topics :
 
-	Android SDK
-	SDK Manager
-	Android Plugin
-	Kotlin Plugin
-	Device Manager
-	Android Emulator
-	Physical Android Device
-	ADB (Android Debug Bridge)
-	Environment Variables
-	Gradle Sync
-	JDK Configuration
+----- D. PROJECT CONFIGURATION -----
 
-------------------------------------------------------------
+[ ] Android SDK
+[ ] SDK Manager
+[ ] Android Plugin
+[ ] Kotlin Plugin
+[ ] Device Manager
+[ ] Android Emulator
+[ ] Physical Android Device
+[ ] ADB (Android Debug Bridge)
+[ ] Environment Variables
+[ ] Gradle Sync
+[ ] JDK Configuration
 
-Running the Application
 
-Topics :
+----- E. RUNNING THE APPLICATION -----
 
-	• Desktop Target
-	• Android Emulator
-	• Physical Android Device
-	• Device Detection
-	• Run Configurations
+[ ] Desktop Target
+[ ] Android Emulator
+[ ] Physical Android Device
+[ ] Device Detection
+[ ] Run Configurations
 	
 
-*************************************************** Chapter 4 — Project Structure **************************************************************************
 
-Part 1 : Root Project
+----- F. PROJECT STRUCTURE -----
 
-Topics :
+	[ ] Root Project
+	[ ] Why Multi-Module?
 
-	• Root Project
-	• Why Multi-Module?
+	--> Modules 
 
-------------------------------------------------------------
+	[ ] androidApp
+	[ ] desktopApp
+	[ ] shared
+	[ ] Module Relationship
 
-Part 2 : Modules
+	--> Source Sets 
 
-Topics :
+	[ ] commonMain
+	[ ] commonTest
+	[ ] androidMain
+	[ ] androidHostTest
+	[ ] jvmMain
+	[ ] jvmTest
 
-	• androidApp
-	• desktopApp
-	• shared
-	• Module Relationship
+	--> Folder Ownership 
 
-------------------------------------------------------------
+	[ ] build
+	[ ] .gradle
+	[ ] .idea
+	[ ] .kotlin
+	[ ] gradle
+
+	--> Root Files 
+
+	[ ] build.gradle.kts
+	[ ] settings.gradle.kts
+	[ ] gradle.properties
+	[ ] local.properties
+	[ ] gradlew
+	[ ] gradlew.bat
+	[ ] README.md
+	[ ] .gitignore
 
-Part 3 : Source Sets
+
+----- G. BUILD LIFECYCLE -----
+
+[ ] Click Run
+[ ] Gradle Starts
+[ ] Read settings.gradle.kts
+[ ] Read build.gradle.kts
+[ ] Download Plugins
+[ ] Download Dependencies
+[ ] Compile Kotlin
+[ ] Compose Compiler Plugin
+[ ] Generate Bytecode
+[ ] Package Application
+[ ] JVM Startup
+[ ] Compose Runtime Startup
+[ ] main()
+[ ] application()
+[ ] Window()
+[ ] UI Displayed
+
+
+
+=========================== Module 4 : BUILDING OUR FIRST MULTIPLATFORM APPLICATION ===========================
+
+
+----- A. PROJECT CREATION & FIRST BUILD -----
+
+[ ] Generate Project
+[ ] Open in IntelliJ
+[ ] Gradle Sync
+[ ] AGP Compatibility
+[ ] Build Errors — basic understanding
+[ ] JDK Selection
+[ ] Android SDK Detection
+[ ] First Build
+[ ] Build Successful
+
+
+----- B. UNDERSTANDING THE GENERATED PROJECT -----
+
+[ ] Generated Structure
+[ ] androidApp
+[ ] desktopApp
+[ ] shared
+[ ] libs.versions.toml
+[ ] Version Catalog
+[ ] Compare Practice Project with Production Structure
+
+----- C. ENTRY POINTS & APPLICATION STARTUP -----
+
+[ ] desktopApp/main.kt
+[ ] androidApp/MainActivity.kt
+[ ] App()
+[ ] Platform Startup
+[ ] Shared UI
+[ ] Desktop Startup Flow
+[ ] Android Startup Flow
+
+
+----- D. RUNNING THE APPLICATION -----
+
+[ ] Desktop Run Configuration
+[ ] Android Run Configuration
+[ ] Emulator
+[ ] Physical Device
+[ ] Device Detection
+[ ] First Desktop Run
+[ ] First Android Run
+
+
+----- E. BUILDING THE FIRST SCREEN -----
+
+[ ] Text()
+[ ] MaterialTheme
+[ ] Modifier
+[ ] Button()
+[ ] Column()
+[ ] Row()
+[ ] Box()
+
+----- F. COMPOSE STATE & RECOMPOSITION -----
+
+[ ] Why Compose needs State
+[ ] remember()
+[ ] mutableStateOf()
+[ ] remember + mutableStateOf()
+[ ] by (Property Delegation)
+[ ] State Change
+[ ] Recomposition
+[ ] State Hoisting — Basic
+[ ] Click Counter
+[ ] Show / Hide Text
+[ ] Enable / Disable Button
+
+
+----- G. MODIFIER & LAYOUT -----
+
+[ ] Modifier Chain
+[ ] Modifier Order
+[ ] padding()
+[ ] size()
+[ ] width()
+[ ] height()
+[ ] fillMaxWidth()
+[ ] fillMaxSize()
+[ ] background()
+[ ] Alignment
+[ ] Arrangement
+[ ] Nested Column
+[ ] Nested Row
+[ ] Column inside Row
+[ ] Row inside Column
+[ ] Box Alignment
+[ ] Build Login Screen
+
+
+----- H. DUMMY PROJECT ORGANIZATION -----
+
+[ ] Folder Organization
+[ ] Package Structure
+[ ] ui/
+[ ] components/
+[ ] screens/
+[ ] theme/
+[ ] Move App()
+[ ] Code Cleanup
+[ ] Final Practice Project Architecture
+[ ] Compare Practice Project with Production Project
 
-Topics :
 
-	• commonMain
-	• commonTest
-	• androidMain
-	• androidHostTest
-	• jvmMain
-	• jvmTest
 
-------------------------------------------------------------
-
-Part 4 : Folder Ownership
-
-Topics :
-
-	• build
-	• .gradle
-	• .idea
-	• .kotlin
-	• gradle
-
-------------------------------------------------------------
-
-Part 5 : Root Files
-
-Topics :
-
-	• build.gradle.kts
-	• settings.gradle.kts
-	• gradle.properties
-	• local.properties
-	• gradlew
-	• gradlew.bat
-	• README.md
-	• .gitignore
-
-
-*************************************************** Chapter 5 — Build Lifecycle **************************************************************************
-Goal :
-
-Understand what happens after pressing the Run button.
-
-Topics :
-
-	Click Run
-	Gradle Starts
-	Read settings.gradle.kts
-	Read build.gradle.kts
-	Download Plugins
-	Download Dependencies
-	Compile Kotlin
-	Compose Compiler Plugin
-	Generate Bytecode
-	Package Application
-	JVM Startup
-	Compose Runtime Startup
-	main()
-	application()
-	Window()
-	UI Displayed
-
-
-##############################################################################################################################
-############################################ MODULE 4 : BUILDING OUR FIRST MULTIPLATFORM APPLICATION ############################################
-
-Goal :
-
-Build a real Kotlin Multiplatform application using the latest architecture while understanding every generated component.
-
-************************************************ Chapter 1 - Project Creation & First Build ************************************************
-
-Topics :
-
-    • Generate Project
-    • Open in IntelliJ
-    • Gradle Sync	& AGP Compatibility	& Build Errors
-	• JDK Selection
-    • Android SDK Detection
-    • First Build	&	Build Successful
-
-
-************************************************ Chapter 2 - Understanding the Generated Project ************************************************
-
-Topics :
-
-    • Generated Structure
-    • androidApp
-    • desktopApp
-    • shared
-    • libs.versions.toml
-    • Version Catalog
-    • Compare with Production Structure
-
-************************************************ Chapter 3 - Entry Points & Application Startup ************************************************
-
-Topics :
-
-    • desktopApp/main.kt
-    • androidApp/MainActivity.kt
-    • App()
-    • Platform Startup
-    • Shared UI
-    • Desktop Startup Flow
-    • Android Startup Flow
-
-
-************************************************ Chapter 4 - Running the Application ************************************************
-
-Topics :
-
-    • Desktop Run Configuration
-    • Android Run Configuration
-    • Emulator
-    • Physical Device
-    • Device Detection
-    • First Desktop Run
-    • First Android Run
-
-************************************************ Chapter 5 - Build the First Screen ************************************************
-
-Topics :
-
-    • Text()
-    • MaterialTheme
-    • Modifier
-    • Button()
-    • Column()
-    • Row()
-    • Box()
-
-************************************************ Chapter 6 - State Management ************************************************
-
-Topics :
-
-    • Why Compose needs State
-    • remember()
-    • mutableStateOf()
-    • remember + mutableStateOf()
-    • by (Property Delegation)
-    • Recomposition
-    • Build Interactive Counter
-    • State Hoisting (Basic)
-	
-Practical
-
-    • Click Counter
-    • Show / Hide Text
-    • Enable / Disable Button		//implemented in ComposeLearning_04 in App6
-
-
-************************************************ Chapter 7 - Modifier & Layout Mastery ************************************************
-
-Topics :
-
-    • Modifier Chain
-    • padding()
-    • size()
-    • width()
-    • height()
-    • fillMaxWidth()
-    • fillMaxSize()
-    • background()
-    • Alignment	& Arrangement
-    • Nested Column
-    • Nested Row
-    • Column inside Row
-    • Row inside Column
-    • Box Alignment
-    • Build Login Screen
-
-************************************************ Chapter 8 - Dummy Project Complete ************************************************
-
-Topics :
-
-    • Folder Organization
-    • Package Structure
-    • Create ui/
-    • Create components/
-    • Create screens/
-    • Create theme/
-    • Move App()
-    • Code Cleanup
-    • Final Project Architecture
-    • Compare with Production Project
-	
-
-##############################################################################################################################
-############################################ MODULE 5 : PRODUCTION CODE #####################################################
-
-Goal :
-
-    Read the production project line by line. Learn every unknown concept in
-    dependency order and implement it in the practice project before moving to
-    the next concept.
-
-*****************************************************************************************************************************
-
-Learning Cycle
-
-    Production Code
-            ↓
-    Unknown Concept
-            ↓
-    Learn Dependencies First
-            ↓
-    Learn the Concept
-            ↓
-    Implement in Practice Project
-            ↓
-    Compare with Production Code
-            ↓
-    Continue Reading
-
-*****************************************************************************************************************************
-
-Chapter 1 - Main.kt
-
-Topics :
-
-    • main()
-    • application()
-    • Window()
-    • AtekApp()
-
-Goal :
-
-    Understand the production application entry point.
-
-*****************************************************************************************************************************
-
-Chapter 2 - AtekApp.kt
-
-Topics :
-
-    Learn every new concept encountered.
-
-Goal :
-
-    Understand how the application is initialized.
-
-*****************************************************************************************************************************
-
-Chapter 3 - Continue Production Code
-
-Topics :
-
-    Learn every new concept encountered.
-
-Goal :
-
-    Continue reading the production project while implementing every concept in
-    the practice project.
-	
-############################################ MODULE 5 : AtekApp DEEP DIVE ##################################################
-
-Topics:
-
-    • Application Lifecycle
-    • Startup Sequence
-    • Configuration
-    • Repository
-    • Dependency Graph
-    • State Management
-
-##############################################################################################################################
-############################################ MODULE 6 : UI LAYER ###########################################################
-
-Topics:
-
-    • MainScreen
-    • Components
-    • Navigation
-    • Screen State
-    • Data Flow
-    • Modifier Chain
-
-##############################################################################################################################
-############################################ MODULE 7 : ADVANCED COMPOSE ###################################################
-
-(Study only when encountered in production code)
-
-    • mutableStateOf
-    • StateFlow
-    • collectAsState
-    • rememberSaveable
-    • LaunchedEffect
-    • DisposableEffect
-    • rememberCoroutineScope
-    • derivedStateOf
-    • Snapshot State
-
-##############################################################################################################################
-############################################ MODULE 8 : PRODUCTION ARCHITECTURE #############################################
-
-Topics:
-
-    • Project Structure
-    • Folder Structure
-    • Repository Pattern
-    • Domain Layer
-    • MVVM
-    • Dependency Direction
-    • Data Flow
