@@ -94,197 +94,198 @@
 
 ----- A. COMPOSE SYNTAX & ANNOTATIONS -----
 
-[ ] Annotation in Compose
-[ ] @Composable — how to use it
-[ ] Composable Function Parameters
-[ ] Reusable Composable Functions
-[ ] @Preview
+[✓] Annotation in Compose
+[✓] @Composable — how to use it
+[✓] Composable Function Parameters
+[✓] Reusable Composable Functions
+[✓] @Preview
 
 
 ----- B. MODIFIER -----
 
-[ ] What is Modifier?
-[ ] Modifier as a parameter
-[ ] Basic Modifier usage
-[ ] Modifier Chain
-[ ] Modifier Order
+[✓] What is Modifier?
+[✓] Modifier as a parameter
+[✓] Basic Modifier usage
+[✓] Modifier Chain
+[✓] Modifier Order
 
 
 ----- C. THEME -----
 
-[ ] Material Components — basic concept
-[ ] MaterialTheme
-[ ] Theme and UI styling
+[✓] Material Components — basic concept
+[✓] MaterialTheme
+[✓] Theme and UI styling
 
 
 ----- D. STATE BASICS -----
 
-[ ] mutableStateOf()
-[ ] remember()
-[ ] remember + mutableStateOf()
-[ ] by — Property Delegation in Compose
-[ ] State change and Recomposition
-[ ] rememberWindowState()
+[✓] mutableStateOf()
+[✓] remember()
+[✓] remember + mutableStateOf()
+[✓] by — Property Delegation in Compose
+[✓] State change and Recomposition
+[✓] rememberWindowState()
 
 
 ----- E. WINDOW CONFIGURATION -----
 
-[ ] Window()
-[ ] Window() Parameters
-[ ] WindowState
+[✓] Window()
+[✓] Window() Parameters
+[✓] WindowState
 
 ----- F. APPLICATION CONFIGURATION -----
 
-[ ] application()
-[ ] application() Parameters
+[✓] application()
+[✓] application() Parameters
 
 
 =========================== Module 3 PROJECT FOUNDATION : Project setup and then production development. ===========================
 
 ----- A. DEVELOPMENT ENVIRONMENT -----
 
-[ ] IntelliJ IDEA
-[ ] JDK / JBR
-[ ] JDK vs JRE vs JVM
-[ ] Java Version Compatibility
-[ ] Gradle
-[ ] Kotlin Compiler
-[ ] Compose Compiler Plugin
-[ ] Compose Multiplatform Plugin
-[ ] Compose Runtime
-[ ] Dependencies
-[ ] How Everything Connects
+[✓] IntelliJ IDEA
+[✓] JDK / JBR
+[✓] JDK vs JRE vs JVM
+[✓] Java Version Compatibility
+[✓] Gradle
+[✓] Kotlin Compiler
+[✓] Compose Compiler Plugin
+[✓] Compose Multiplatform Plugin
+[✓] Compose Runtime
+[✓] Dependencies
+[✓] How Everything Connects
 
 ----- B. PROJECT CREATION -----
 
-[ ] Current Project Creation Methods
-[ ] Why Compose Project Wizard Changed
-[ ] Kotlin Multiplatform Project Wizard
-[ ] Official Project Generator
-[ ] Generated Project Structure
-[ ] Open Project
-[ ] Gradle Sync
-[ ] Run Generated Project
+[✓] Current Project Creation Methods
+[✓] Why Compose Project Wizard Changed
+[✓] Kotlin Multiplatform Project Wizard
+[✓] Official Project Generator
+[✓] Generated Project Structure
+[✓] Open Project
+[✓] Gradle Sync
+[✓] Run Generated Project
+[✓] Real-World Issue — AGP Compatibility
 
 ----- Manual Project Creation -----
 
-[ ] Create Empty Folder
-[ ] settings.gradle.kts
-[ ] build.gradle.kts
-[ ] gradle.properties
-[ ] Gradle Wrapper
-[ ] libs.versions.toml (Version Catalog)
-[ ] Link Gradle Project
-[ ] Gradle Import Flow
-[ ] Create Main.kt
-[ ] First Compose Application
+[SKIP] Create Empty Folder
+[SKIP] settings.gradle.kts
+[SKIP] build.gradle.kts
+[SKIP] gradle.properties
+[SKIP] Gradle Wrapper
+[SKIP] libs.versions.toml (Version Catalog)
+[SKIP] Link Gradle Project
+[SKIP] Gradle Import Flow
+[SKIP] Create Main.kt
+[SKIP] First Compose Application
 	
 	
 ----- C. GRADLE FUNDAMENTALS -----
 
-[ ] What is Gradle?
-[ ] Gradle Tasks
-[ ] Task Dependency
-[ ] Plugins
-[ ] Dependencies
-[ ] Application Packaging
-[ ] Runtime Execution
+[✓] What is Gradle?
+[✓] Gradle Tasks
+[✓] Task Dependency
+[✓] Plugins
+[✓] Dependencies
+[✓] Application Packaging
+[✓] Runtime Execution
 
 
 ----- D. PROJECT CONFIGURATION -----
 
-[ ] Android SDK
-[ ] SDK Manager
-[ ] Android Gradle Plugin
-[ ] Kotlin Plugin
-[ ] Device Manager
-[ ] Android Emulator
-[ ] Physical Android Device
-[ ] ADB (Android Debug Bridge)
-[ ] Environment Variables
-[ ] Gradle Sync
-[ ] JDK / JBR Configuration
+[✓] Android SDK
+[✓] SDK Manager
+[✓] Android Gradle Plugin
+[✓] Kotlin Plugin
+[✓] Device Manager
+[✓] Android Emulator
+[✓] Physical Android Device
+[✓] ADB (Android Debug Bridge)
+[✓] Environment Variables
 
 
 ----- E. RUNNING THE APPLICATION -----
 
-[ ] Desktop Target
-[ ] Android Emulator
-[ ] Physical Android Device
-[ ] Device Detection
-[ ] Run Configurations
+[✓] Desktop Target
+[✓] Android Emulator
+[✓] Physical Android Device
+[✓] Device Detection
+[✓] Run Configurations
 	
 
 
 ----- F. PROJECT STRUCTURE -----
 
-[ ] Root Project
-[ ] Gradle Project vs Module
-[ ] Why Multi-Module?
-[ ] Current Compose Multiplatform Project Structures
+[✓] Root Project
+[✓] Gradle Project vs Module
+[✓] settings.gradle.kts and Module Inclusion
+[✓] Why Multi-Module?
+[✓] Current Compose Multiplatform Project Structures
 
 --> Modules
 
-[ ] shared
-[ ] desktopApp
-[ ] androidApp
-[ ] composeApp
-[ ] Module Relationship
-
+[✓] What is a Module?
+[✓] shared
+[✓] desktopApp
+[✓] androidApp
+[✓] composeApp
+[✓] Module Relationship
+[✓] Module Dependencies
 
 --> Source Sets
 
-[ ] commonMain
-[ ] commonTest
-[ ] androidMain
-[ ] androidHostTest
-[ ] jvmMain
-[ ] jvmTest
-[ ] Platform-specific Source Sets
-[ ] Source Set Dependency
+[✓] What is a Source Set?
+[✓] commonMain
+[✓] commonTest
+[✓] androidMain
+[✓] androidHostTest
+[✓] jvmMain
+[✓] jvmTest
+[✓] Platform-specific Source Sets
+[✓] Source Set Dependency
 
 --> Folder Ownership
 
-[ ] build
-[ ] .gradle
-[ ] .idea
-[ ] .kotlin
-[ ] gradle
-[ ] src
-
+[✓] build
+[✓] .gradle
+[✓] .idea
+[✓] .kotlin
+[✓] gradle
+[✓] src
 
 --> Root Files
 
-[ ] build.gradle.kts
-[ ] settings.gradle.kts
-[ ] gradle.properties
-[ ] local.properties
-[ ] gradlew
-[ ] gradlew.bat
-[ ] libs.versions.toml
-[ ] README.md
-[ ] .gitignore
+[✓] build.gradle.kts
+[✓] settings.gradle.kts
+[✓] gradle.properties
+[✓] local.properties
+[✓] gradlew
+[✓] gradlew.bat
+[✓] libs.versions.toml
+[✓] README.md
+[✓] .gitignore
 
 
 ----- G. BUILD LIFECYCLE -----
 
-[ ] Click Run
-[ ] Gradle Starts
-[ ] Read settings.gradle.kts
-[ ] Configure Project
-[ ] Read build.gradle.kts
-[ ] Resolve Plugins
-[ ] Resolve Dependencies
-[ ] Compile Kotlin
-[ ] Compose Compiler
-[ ] Generate JVM Bytecode
-[ ] Package Application
-[ ] JVM Startup
-[ ] Compose Runtime Startup
-[ ] main()
-[ ] application()
-[ ] Window()
-[ ] UI Displayed
+[✓] Click Run
+[✓] Gradle Starts
+[✓] Read settings.gradle.kts
+[✓] Configure Project
+[✓] Read build.gradle.kts
+[✓] Resolve Plugins
+[✓] Resolve Dependencies
+[✓] Compile Kotlin
+[✓] Compose Compiler
+[✓] Generate JVM Bytecode
+[✓] Package Application
+[✓] JVM Startup
+[✓] Compose Runtime Startup
+[✓] main()
+[✓] application()
+[✓] Window()
+[✓] UI Displayed
 
 
 =========================== Module 4 : BUILDING OUR FIRST MULTIPLATFORM APPLICATION ===========================

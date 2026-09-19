@@ -1927,40 +1927,88 @@ NOTE :
 ********************************* A. DEVELOPMENT ENVIRONMENT *********************************
 
 --> Project Flow :
-	Developer		->		IntelliJ IDEA		->		Gradle		->		Compose Compiler Plugin		->		Kotlin Compiler		->		.class Files	->		JVM		->		Compose Runtime		->		Operating System		->		Application Running
+	--> Build / Compile Time
+
+        Developer
+            ↓
+        IntelliJ IDEA
+            ↓
+        Gradle
+            ↓
+        Gradle Plugins
+            ├── Kotlin Plugin
+            ├── Compose Multiplatform Plugin
+            └── Android Plugin (if present)
+            ↓
+        Dependencies
+            ↓
+        Compose Compiler Plugin
+            ↓
+        Kotlin Compiler
+            ↓
+        JVM Bytecode (.class) / Application Artifacts
+
+
+    --> Run Time
+
+        JVM
+            ↓
+        Compose Runtime
+            ↓
+        Operating System
+            ↓
+        Application Running
 
 --> IntelliJ IDEA
 	IntelliJ IDEA is an Integrated Development Environment (IDE) developed by JetBrains.
-	It provides everything required to develop Kotlin and Compose applications.
+	An IDE is a software application that gives you the tools needed to develop software in one place.
+	It provides everything required to develop Kotlin and  Compose Multiplatform applications.
 	
 	Responsibilities : Write code | Auto-completion | Debugging | Run Gradle | Manage projects | Run Application
 	
 	--> Does IntelliJ compile our code?
 
-		NO.
-		IntelliJ only starts the Build Process.
-		The actual compilation is performed by Gradle and the Kotlin Compiler.
+		NO. IntelliJ IDEA is the development environment. Think of IntelliJ as the place from which we work
+		It starts and coordinates the build process.
+		
+		The actual build and compilation are performed by Gradle and the configured compiler/toolchain.
 
---> JDK[Java Development Kit]
-	JDK stands for Java Development Kit.It provides the tools required to develop Java and Kotlin applications.
-
-		
-	--> JDK Contains : JVM | JRE | Java Compiler (javac) | Java Libraries | Debugging Tools | Development Tools
-		
-	--> Why do Kotlin applications need JDK?
-		Kotlin JVM applications ultimately run on the JVM. Therefore, the JDK is required to compile and run Kotlin code.
-		
-	Flow :
-		Kotlin Code		->		Kotlin Compiler		->		.class		->		JVM (provided by the JDK)		->		Program Executes
+--> JDK / JBR
 	
+	JDK[Java Development Kit] :
+		The JDK is a collection of tools and components needed to develop and run JVM-based applications.
+		Since our Compose Desktop application runs on the JVM, Java's development/runtime environment is involved even though our source code is Kotlin.
+		
+		Think:
+			Kotlin Project	->	Runs on JVM		->	Needs a compatible Java environment		->		JDK / JBR
+	
+		--> Why does Kotlin need Java?
+			Desktop Compose application is compiled for the JVM.
+			Kotlin Code	->	Kotlin Compiler	->	JVM Bytecode	->	JVM		->	Application runs
+	
+		--> JDK Contains : JVM | JRE | Java Compiler (javac) | Java Libraries | Debugging Tools | Development Tools
+	
+	JBR[JetBrains Runtime] :
+		JetBrains develops IntelliJ IDEA and other IDEs.
+		JetBrains also provides its own Java runtime distribution based on OpenJDK, called JetBrains Runtime (JBR).
+		
+		JetBrains applications such as IntelliJ IDEA are themselves JVM applications.
+			IntelliJ IDEA	->	JVM		->		Java Runtime
+
 --> JDK vs JRE vs JVM 	
 		
 	--> JVM (Java Virtual Machine)
 
-		Purpose : Execute Java Bytecode.
-
+		Purpose : JVM is the actual engine that executes JVM bytecode.
+			Kotlin Source Code (.kt)	->	Kotlin Compiler		->		JVM Bytecode (.class)	->	JVM		->	Program Executes
 		It does NOT compile code.It only runs compiled Bytecode.	
-	
+		
+		--> how does JVM execute bytecode?
+			
+			JIT = Just-In-Time Compiler
+			If the JVM notices that calculate() is "hot" — executed frequently — the JIT compiler can compile it into optimized native code.
+			The application starts running, and while it is running, the JVM may use JIT to compile frequently executed code into native code.
+			
 	--> JRE (Java Runtime Environment)
 	
 		Purpose : Provide everything required to RUN Java Applications.
@@ -1970,49 +2018,89 @@ NOTE :
 		
 		Purpose : Develop Java/Kotlin Applications.
 		JDK Contains :	• JRE |	• JVM | • Compiler | • Development Tools
-		
+
+--> Java Version Compatibility
+		Different tools in a project must be compatible.
+		Java Version Compatibility	->	Can all project tools work together?	->	JDK + Gradle + Kotlin + Compose + Android tools		->	Compatible versions		->		Build succeeds
+
 --> Gradle 	
-	
 	Gradle is an Automation and Build Tool.It automates the process of building the project.
 	
 	--> Responsibilities
-		Gradle
-			↓
-		Download Dependencies
-			↓
-		Compile Source Code
-			↓
-		Run Compose Compiler
-			↓
-		Create Build Files
-			↓
-		Run Application
+		Gradle	-> Download Dependencies	->	Compile Source Code	->	Run Compose Compiler	->	Create Build Files	->	Run Application
+	
+	--> What does Gradle actually do?
+		Gradle reads your project configuration and performs the required build tasks.
+		For example:
+			Developer
+				↓
+			Gradle
+				├── Resolve plugins
+				├── Download dependencies
+				├── Configure project
+				├── Compile Kotlin
+				├── Run Compose-related compilation
+				├── Process resources
+				├── Package application
+				└── Run application
+				
+
+	--> Gradle is not only for Kotlin	
+		It can be used for : Java	|	Kotlin	|	Android		|	Kotlin Multiplatform	|	Compose Multiplatform
 	
 	--> Why do we need Gradle?
-
 		Without Gradle, we would have to manually :
 
-			• Download Libraries
-			• Configure Compiler
-			• Compile Source Code
-			• Package the Application
-			• Run the Application
+			• Download Libraries	|	• Configure Compiler	|	• Compile Source Code	|	• Package the Application	|	• Run the Application
 
 		Gradle automates all these tasks.
+	
+	--> What are Gradle Tasks?
+		A task is basically a specific operation Gradle knows how to perform.
+
+		Examples :
+			compileKotlin	|	test	|	build	|	run	|	package
 		
-	--> Project Files	:	
+		A larger task can depend on other tasks.
+			For example : build	->	compile	->	resolve dependencies
+			So Gradle knows what needs to happen and in what order.
+	
+	--> Gradle Plugins
+		A Gradle plugin adds functionality/configuration to Gradle.
+			Conceptually : Gradle	->	Plugins add capabilities	->	Kotlin support	|	Compose support	|	Android support
+		
+		For example:
+			Kotlin Plugin	|	Compose Multiplatform Plugin	|	Android Gradle Plugin
+	
+	--> Gradle Dependencies
+		application doesn't contain every library itself.
+		For example:
+			dependencies {
+				implementation(...)
+			}
+		tells Gradle:
+			"My project needs this library." Gradle then resolves/downloads the required dependency from configured repositories
+			
+	--> Important Gradle files	:	
 		Common Gradle Files :	settings.gradle.kts	|	build.gradle.kts	|	gradle.properties
 		
-		--> build.gradle.kts
-			It contains : 	• Plugins | • Dependencies | 	• Project Configuration | • Build Configuration
-	
-		--> settings.gradle.kts
-			It defines : • Project Name | • Included Modules
+		--> settings.gradle.kts		:	Which projects/modules exist?
+			defines project-level settings
+				• Project Name | • Included Modules | Plugin management / repositories
 		
-		--> gradle.properties
-			It stores Gradle configuration.
-			Example :
-				• JVM Arguments | • Build Properties
+		
+		--> build.gradle.kts	:	How should this project/module be built?
+			Defines how the project/module is built.
+				• Plugins | • Dependencies | 	• Project Configuration | • Build Configuration
+			
+			--> .gradle.kts — why Kotlin?
+				Because this is a Kotlin DSL(Domain-Specific Language)  file.
+				.gradle	   		 → Gradle script
+				.gradle.kts		 → Gradle script written using Kotlin DSL
+				
+		--> gradle.properties	:	Configuration values for the Gradle build.
+			Contains Gradle/project properties and configuration.
+				Gradle JVM arguments | Build-related properties |  Project properties
 					
 --> Kotlin Compiler 
 
@@ -2034,12 +2122,13 @@ NOTE :
 	Works at : Compile Time
 
 	Purpose :
-
-		Recognize @Composable
-				↓
-		Transform Compose code into normal Kotlin code
-				↓
-		Pass it to the Kotlin Compiler
+		Process @Composable code
+                ↓
+        Transform Compose-specific code
+                ↓
+        Generate JVM-compatible compiled code
+                ↓
+        Kotlin compilation process
 	
 --> Compose Multiplatform Plugin 
 	
@@ -2074,362 +2163,190 @@ NOTE :
 				implementation(...)
 			}
 		implementation tells Gradle : "This project depends on this library."
-
---> How Everything Connects 
-	Developer		->		IntelliJ IDEA		->		Gradle		->		Compose Multiplatform Plugin		->		Compose Compiler Plugin		->		Kotlin Compiler		->		Bytecode (.class)	->		JVM		->		Compose Runtime		->		Operating System		->		Application Running
-		
 	
-******************************************** Chapter 2 - Project Creation ********************************************
-******************************** Method 1 - Official Project Creation ********************************
-Our Environment :
-	JDK            → 11
-	Platform       → Linux ARM64
-	Language       → Kotlin Multiplatform
-	UI             → Compose Multiplatform
-	Build System   → Gradle
 
---> Current Project Creation Methods
+********************************* B. PROJECT CREATION *********************************	
+There are two ways to create a Compose Multiplatform Project.
+	Method 1	:	Official Project Generator(Project generated automatically)		|		Method 2	:	Manual Project Creation(Developer creates every file manually)
 
-	There are two ways to create a Compose Multiplatform Project.
-
-		Method 1	:	Official Project Generator
-		Method 2	:	Manual Project Creation
-
-	Both create the same type of project.
-
-	The difference is only who creates the project structure.
-
-		Official Project Generator	:	Project generated automatically.
-
-		Manual Project Creation		:	Developer creates every file manually.
-
-
---> Official Project Generator
-
+-->  Method 1 - Official Project Generator 
 	The Official Project Generator creates a ready-to-use Compose Multiplatform project.
 	It automatically generates :	Project Structure	|	Gradle Configuration	|	Source Structure	|	Sample Application	|	Build Configuration
 
 --> Why did the Compose Project Wizard change?
-		Earlier, IntelliJ IDEA contained a built-in Compose Project Wizard.
-		Later, JetBrains moved project generation to the official website.
-		Reason : Project Templates change frequently.
-			Keeping templates on the website allows JetBrains to update them without waiting for a new IntelliJ release.
+	Earlier, IntelliJ IDEA contained a built-in Compose Project Wizard.
+	Later, JetBrains moved project generation to the official website.
+	
+	Reason : 
+		Project Templates change frequently.
+		Keeping templates on the website allows JetBrains to update them without waiting for a new IntelliJ release.
 
-	Website :	https://kmp.jetbrains.com/
+--> Kotlin Multiplatform Project Wizard
 
-    Project Name :	Human-readable name of the project/folder.
-        Example  :	ComposeLearning
+    Kotlin Multiplatform provides an official project generator/wizard for creating Kotlin Multiplatform projects.
 
-    Project ID   :	Unique identifier of the project.
-        Example  :  com.atek.composelearning
+    Website : https://kmp.jetbrains.com/
+
+    Project Name : Human-readable name of the project/folder.
+        Example : ComposeLearning
+
+    Project ID : Unique identifier of the project.
+        Example : com.atek.composelearning
 		
 		
 --> Generated Project Structure
-	The official generator creates a Multi-Module project.
+	The Official Project Generator creates a Multi-Module project.
+	
     Example :
-        ComposeLearning
-			│
-			├── androidApp
-			├── desktopApp
-			├── shared
-			├── build.gradle.kts
-			├── settings.gradle.kts
-			├── gradle.properties
-			├── gradlew
-			├── gradlew.bat
-			└── gradle
+
+        ProjectBasic01
+            │
+            ├── .gradle
+            ├── .idea
+            ├── androidApp
+            ├── desktopApp
+            ├── gradle
+            ├── shared
+            │
+            ├── .gitignore
+            ├── build.gradle.kts
+            ├── gradle.properties
+            ├── gradlew
+            ├── gradlew.bat
+            ├── local.properties
+            ├── README.md
+            └── settings.gradle.kts
 	
 	--> Why Multi-Module?
 		Compose Multiplatform separates the project into multiple modules.
 		
-		androidApp		-	Android-specific code
-		desktopApp		-	Desktop-specific code
-		shared			-	Common code shared by all platforms.
+		androidApp     → Android-specific application code/configuration
+        desktopApp     → Desktop-specific application code/configuration
+        shared         → Common code shared between platforms
 	
-	--> Opening the Project
-		After opening the project,
-			IntelliJ detects that it is a Gradle Project.
-					↓
-			Starts Gradle Sync
-			
-	--> Gradle Sync	
+--> Opening the Project
+
+    After opening the generated project,
+
+        IntelliJ IDEA loads the project.
+                ↓
+        IntelliJ detects the Gradle project by seeing files : build.gradle.kts | settings.gradle.kts | etc
+                ↓
+        Gradle Sync starts.
+
+--> What is Gradle Sync?
+	
+	When IntelliJ opens a Gradle project, it needs to understand the project's Gradle configuration.
+
+	Gradle Sync is the process where IntelliJ and Gradle work together to load the project's configuration and make the required dependencies, plugins, modules, source sets, and build information available to the IDE.	
+	
+	Basic flow:
+		Project Opened
+			  ↓
+		IntelliJ detects Gradle project
+			  ↓
+		Gradle Sync
+			  ↓
+		Read Gradle configuration
+			  ↓
+		Resolve plugins & dependencies
+			  ↓
+		Configure project in IntelliJ
+			  ↓
+		Project Ready
+		
+	--> What does Gradle Sync read?
+		
+		settings.gradle.kts		: tells Gradle about the project and its modules.
+		build.gradle.kts		: tells Gradle how those projects/modules are configured and built.
+		gradle.properties		: provides Gradle/project properties.
+	
+	--> What happens during Sync?
 		Gradle Sync performs the following tasks :
 
 			Read settings.gradle.kts
-					↓
+				↓
+			Identify project/modules
+				↓
 			Read build.gradle.kts
-					↓
-			Load Plugins
-					↓
-			Resolve Dependencies
-					↓
-			Download Missing Libraries
-					↓
-			Configure IntelliJ Project
-					↓
-			Project Ready
+				↓
+			Load required plugins
+				↓
+			Resolve dependencies
+				↓
+			Download missing components
+				↓
+			Configure project
+				↓
+			IntelliJ understands the project
 			
 	--> Why is Gradle Sync required?
-			Without Gradle Sync, IntelliJ does not know :	Dependencies	|	Plugins		|	Source Folders		|		Build Tasks
-
-	--> During Gradle Sync
-			Gradle	->	Read settings.gradle.kts	->	Read build.gradle.kts	->	Load Plugins	->	Resolve Dependencies	->	Download Missing Libraries	->	Configure Project	->	IntelliJ Project Ready
+			Because IntelliJ cannot know everything about your project just by looking at the folders.
+			IntelliJ needs Gradle to tell it things such as:
+				Which are Gradle modules?	|	Which plugins are applied?	|	Which dependencies are required?	|	Which source sets exist?	|	Which targets are configured?	|	Which build tasks exist?
 	
+
 	--> Run Generated Project
 
-		Click Run	->	IntelliJ IDEA	->	Gradle	->	Kotlin Compiler	->	Compose Compiler Plugin	->	Bytecode (.class)	->	JVM	->	Compose Runtime	->	Application Starts
-	
-	
-******************************** Method 2 — Manual Project Creation ********************************			
---> Step 1 : Create Empty Folder
+		Click Run	->	IntelliJ IDEA	->	Gradle	->	Resolve required configuration/dependencies	->	Compile Kotlin + Compose code	->	Create JVM bytecode / application artifacts	->	Start JVM application	->	Compose Runtime	->	Compose UI	->	Application Starts
 
-	Create an Empty Folder.It is just a normal folder.IntelliJ does NOT recognize it as a Gradle project because no Gradle files exist.
-		Example :	ComposeLearning/
+--> Real-World Issue[to run android application] — AGP Compatibility
 
---> Step 2 : Create settings.gradle.kts
-	settings.gradle.kts is the first Gradle file read by Gradle.
-	Gradle must know : "What project am I building?" . It gets this information from settings.gradle.kts.
-	
-	Purpose : Define Project Name	|	Configure Plugin Management
-	
-	Example: rootProject.name = "ComposeLearning"
-	
-	Responsibilities :	Defines the project name.	|	Tells Gradle this is a Gradle project.	|	Configures Plugin Management 	|	Configures Plugin Versions	
-		
-	-->	rootProject.name = "AtekGate"
-		Define the project Name
-	
-	--> pluginManagement
-		Purpose  : Tell Gradle where Plugins are downloaded from.
-			Example :
-				pluginManagement {
-					repositories {
-					}
+    AGP = Android Gradle Plugin.
 
-					plugins {
-					}
-				}
+    Initial Project :
+        AGP = 9.1.1
+        compileSdk = 37
+        targetSdk = 37
+        Gradle = 9.5.1
 
-		Contains :
-			1. Plugin Repositories	:	Where Gradle downloads plugins from.
-				Example :
-					google()
-					gradlePluginPortal()
-					mavenCentral()
+    --> Problem
+        IntelliJ supports AGP up to 9.0.0, but the generated project uses AGP 9.1.1.
 
-			2. Plugin Versions
-				Example :
-					kotlin("multiplatform").version(extra["kotlin.version"] as String)
+        Sync → AGP Compatibility Error
 
-				Meaning :	Plugin Name +	Plugin Version
-	Concepts Learned :
+    --> Fix for IntelliJ
 
-        • rootProject.name	:	Defines the project name.
-        • pluginManagement	:	Repository for downloading Plugins.
-        • dependencyResolutionManagement	:	Defines where Gradle downloads Libraries.
-        • include(...)	:	Defines project modules.
-		
---> Step 3 : Create build.gradle.kts
+        In libs.versions.toml:
 
-    Purpose :	build.gradle.kts tells Gradle how to build the project.
-	
-	--> Responsibilities : Load Plugins | Configure Repositories | Configure Kotlin | Configure Compose	|	Configure Build
+            agp = "9.0.0"
+            android-compileSdk = "36"
+            android-targetSdk = "36"
 
-	--> Typical Structure	
-			build.gradle.kts
-				├── plugins
-				├── group
-				├── version
-				├── repositories
-				├── kotlin
-				└── compose.desktop
-	
-	--> plugins { }	
-			Purpose  :	Load Gradle Plugins.
-			Examples : Kotlin Plugin | Compose Multiplatform Plugin
-			
-		Example :
-			plugins {
-				kotlin("multiplatform")
-				id("org.jetbrains.compose")
-			}
+        Gradle = 9.5.1 → Keep unchanged.
 
-		Meaning :	Load the required Gradle plugins.
-		
-	--> group
-		Purpose :	Identifies the owner/company of the project.
-		Example :
-			group = "com.atek"
+        Then:
+            Gradle Sync → BUILD SUCCESSFUL
 
-	--> version
-		Purpose :	Defines the project version.SNAPSHOT means the project is still under development.
-		Example :
-			version = "1.0-SNAPSHOT"
-	
-	--> repositories { }		
-			Purpose  :	Tell Gradle where libraries can be downloaded from.
-			Examples :	Maven Central	|	Google	|	JetBrains Compose Repository
-			
-			Example :
-			   repositories {
-					google()
-					mavenCentral()
-					maven("https://jitpack.io")
-					maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-				}
 
-			Difference :  "settings.gradle.kts"		AND  	"build.gradle.kts"
+ --> Run Desktop Application
 
-				settings.gradle.kts	:	 repositories	   →	 Download Plugins
-				build.gradle.kts	:	 repositories	   →	 Download Application Libraries
+     Right Panel → Gradle
+         ↓
+     desktopApp
+         ↓
+     Tasks
+         ↓
+     compose desktop
+         ↓
+		run
+         ↓
+     Desktop Application
 
-			
-	--> kotlin {
-			Purpose :	Configure the Kotlin Multiplatform Plugin.
 
-	--> jvm
-		Example :
-			jvm {
-					jvmToolchain(11)
-					withJava()
-				}
-			
-			Purpose :	Configure the JVM target.
-			
-			--> jvmToolchain(11)
-					Purpose :  Compile the project using JDK 11.
+--> Run Android Application
 
-			--> withJava()
-					Purpose :	Allow Java source files to exist together with Kotlin source files.
-					
-	--> sourceSets
+    Top-right Run Configuration
+        ↓
+    androidApp
+        ↓
+    Select Android Device / Emulator
+        ↓
+    Run ▶
+        ↓
+    Android Application
 
-		Purpose :	Organize source code according to platform and purpose.
-
-		--> val jvmMain by getting { }        →		Main application source code.
-		--> val jvmTest by getting { }        →		Test source code.
-		
-			--> dependencies { }
-				Purpose :	Add Libraries required by a Source Set.
-					Example :
-						   implementation(...)
-						   
-	--> compose.desktop { }
-			Purpose :	Configure the Desktop Application.
-		Example 1:
-			compose.desktop {
-				application {
-					mainClass = "MainKt"
-				}
-			}
-
-		--> application {
-				Purpose :	Configure how Gradle starts the application.
-				
-		--> mainClass
-				Example :	mainClass = "MainKt"
-				Meaning :	Start execution from MainKt.main()
-				
-	--> Compose Runtime
-
-			Dependency :	implementation(compose.desktop.currentOs)
-
-			Purpose    :	Include the Compose Runtime library inside the application.
-
-			During Development :	
-				compose.desktop.currentOs	→	 Automatically selects the runtime for the current operating system.
-
-			Production :	compose.desktop.linux_arm64	 →	Always packages Linux ARM64 Compose Runtime.
-		
-			
---> Step 4 : Create gradle.properties
-	Purpose  :	Store project-wide Gradle configuration values.
-	Examples :	JVM Arguments	|	Build Properties	|	Performance Settings
-
-	Example :	kotlin.version=1.8.0	|	compose.version=1.3.0
-
-	Meaning :
-		Instead of writing everywhere :	version("1.8.0")
-
-		define it once : kotlin.version = 1.8.0	and use it from anywhere.
-	
---> Step 5 : Add Gradle Wrapper
-	
-	Files :
-		gradlew		:	Linux / macOS launcher.
-		gradlew.bat	:	Windows launcher.
-		gradle/		:	Contains the Gradle Wrapper configuration.
-
-	Purpose :	Every developer uses the same Gradle version without installing Gradle manually.
-
-	Flow :
-		gradlew / gradlew.bat
-				↓
-		gradle-wrapper.jar
-				↓
-		gradle-wrapper.properties
-				↓
-		Download Gradle (if required)
-				↓
-		Start Gradle	
-
-	--> Gradle Execution Flow
-
-			Gradle Starts
-					↓
-			Read settings.gradle.kts
-					↓
-			Get Plugin Versions
-			Get Plugin Repositories
-					↓
-			Download Plugins
-					↓
-			Read build.gradle.kts
-					↓
-			Load Plugins
-					↓
-			Read Library Repositories
-					↓
-			Download Dependencies
-					↓
-			Configure Plugins
-					↓
-			Compile
-					↓
-			Run
-	
-	
---> Version Catalog (libs.versions.toml)
-
-    Purpose :	
-		Central place to manage :	Plugin Versions	|	Library Versions	|	Version Numbers
-
-    Sections :
-        [versions]	:	Stores version numbers.
-        [libraries]	:	Stores library definitions.
-        [plugins]	:	Stores plugin definitions.
-
---> Link Gradle Project
-		When IntelliJ detects build.gradle.kts
-			↓
-		Link Gradle Project
-				↓
-		Gradle Sync
-				↓
-		Project Ready
-
---> First Compose Application
-		Main.kt
-			↓
-		application()
-			↓
-		Window()
-			↓
-		Text()
-
-	Result : Successfully created and ran the first Compose Desktop application.	
-	
-******************************** Gradle Fundamentals ********************************	
+********************************* C. GRADLE FUNDAMENTALS *********************************	
 --> Gradle Import & Build Flow
 
 	When IntelliJ shows	:	Link Gradle Project		and we click it,
@@ -2448,7 +2365,119 @@ Our Environment :
 						|	
 						|->		Import Project 
 
+--> Gradle
+
+    Gradle is a Build Automation System.
+    It coordinates the process of building, testing, packaging and running the project.
+
+
+--> Gradle Tasks
+
+    A Gradle Task is a specific unit of work that Gradle can execute.
+
+    Examples :
+        build   → Build the project
+        clean   → Remove build outputs
+        test    → Run tests
+        run     → Run the application
+
+    --> Our Desktop Project
+
+        Right Panel → Gradle
+            ↓
+        desktopApp
+            ↓
+        Tasks
+            ↓
+        compose desktop
+            ↓
+        run
+
+
+--> Task Dependency
+    A Gradle Task can depend on another Task.
+
+    Example :
+
+        run
+         ↓
+        jar
+         ↓
+        classes
+
+    Meaning :
+        run depends on jar.
+        jar depends on classes.
+
+    When we execute run, Gradle automatically executes the required tasks in the correct order.
+
+    --> UP-TO-DATE
+        Gradle skips a task when its existing output is already valid and does not need to be rebuilt.
+
+    Example :
+        classes → UP-TO-DATE
+        jar     → UP-TO-DATE
+        run     → EXECUTED
+
+
+--> Plugins
+    A Gradle Plugin adds/configures specific build functionality in Gradle.
+
+    Examples :
+        Kotlin Multiplatform Plugin
+        Compose Multiplatform Plugin
+        Android Gradle Plugin (AGP)
+        Compose Compiler Plugin
+
+    Example :
+        Gradle
+            ↓
+        Plugin
+            ↓
+        Adds/configures required functionality
+
+    --> Plugin vs Dependency
+
+        Plugin     → Adds/configures build functionality.
+        Dependency → Provides library functionality to application code.
+
+
+--> Dependencies
+    A Dependency is an external Library or Framework that our project requires.
+    Instead of writing everything ourselves, we reuse existing libraries.
+
+    Examples :
+        Compose UI | Coroutines | Serialization | SQLite | Ktor
+
+    --> Where are Dependencies added?
+        In Gradle.
+
+        Example :
+            dependencies {
+                implementation(...)
+            }
+
+        implementation tells Gradle :
+            "This project depends on this library."
+
+
 --> Application Packaging
+    Application Packaging prepares the built application and required resources into a distributable format.
+
+    Desktop packaging tasks can be found at:
+
+        Right Panel → Gradle
+            ↓
+        desktopApp
+            ↓
+        Tasks
+            ↓
+        compose desktop
+
+    Examples :
+        packageReleaseMsix	            → Windows MSIX package
+        packageReleaseDeb	            → Linux DEB package
+		packageReleaseDmg	            → macOS DMG package
 	
 	Flow 					 : 	Main.kt		->		Kotlin Compiler		->		.class files	->		Gradle Packages Everything		->		Application.jar
 
@@ -2456,482 +2485,1730 @@ Our Environment :
 
 
 --> Runtime Execution
+    Runtime means the actual execution of the built application.
 
-	Flow :	java -jar Application.jar	->	JVM Starts		->	Loads .class files		->		main()		->		application()		->		Compose Runtime		->		Window()		->		Application Running
+    Desktop Flow :
 
-
-	Whenever application(), Window(), Button(), Text(), remember() etc. are called,the JVM executes the implementation provided by the Compose Runtime.
-	Whenever Kotlin standard library features are used, the JVM executes the implementation provided by the Kotlin Runtime.
-
-
---> Gradle Tasks
-
-	Task :	A single unit of work that Gradle knows how to perform.
-		Examples :
-			compileKotlin		:	Compiles Kotlin source files.
-			processResources	:	Processes resource files.
-			jar					:	Creates the JAR file.
-			run					:	Starts the application.
-			clean				:	Deletes the build directory.
+        Gradle	->	Required Tasks	->	Build / Compile	->	Application Artifacts/.class	->	JVM	->	main()	->	Compose Runtime	->	UI	->		->	Application Running
 
 
-	--> Task Dependency
-		A Gradle task can depend on one or more other tasks.
+--> Important Points
 
-		Example :	Run	->	Build	->	Compile Kotlin	->	Download Dependencies
-		Meaning :	When we request a task (Example : Run), Gradle automatically executes every required dependent task before executing the requested task.
+    Gradle       → Build Automation System
+    Task         → Unit of work performed by Gradle Task Dependency	|	One task requires another task
+    Plugin       → Adds/configures build functionality
+    Dependency   → External library required by the application
+    Packaging    → Creates a distributable application
+    Runtime      → Actual execution of the application
 
+********************************* D. PROJECT CONFIGURATION *********************************	
 
-	--> Responsibility
-		Each Gradle task has a single responsibility.
-			Examples :
-				compileKotlin	:	Only compiles Kotlin source files.
-				jar				:	Only creates the JAR file.
-				clean			:	Only deletes the build directory.
+--> Android SDK(Software Development Kit)
 
-			Gradle combines multiple tasks to complete larger operations such as Build or Run.
-	
---> 
+    Android SDK = collection of tools, libraries and platform files required for Android development.
 
-Create Main.kt
-	Main.kt contains the application's Entry Point.
-	Example :
-		fun main() = application {
+    Important Parts:
+        Android Platform / API	|	Build Tools	|	Platform Tools	|	Other Android Development Tools
 
-		}
-		
-	--> First Compose Application
+    Example:
+        android-compileSdk = "36"	        → Compile Android application against Android API 36.
 
-		Main.kt	:
-
-			import androidx.compose.material.Text
-			import androidx.compose.ui.window.Window
-			import androidx.compose.ui.window.application
-
-			fun main() = application {
-				Window(
-					onCloseRequest = ::exitApplication,
-					title = "Compose Learning"
-				) {
-					Text("Hello Compose")
-				}
-			}
-
-		Purpose :	Build and run the smallest Compose Desktop application.
-
-		Result :	Successfully created and ran the first Compose Desktop application manually.
+    Android SDK → Android platform/tools.
+    AGP 		→ Android build functionality.
 
 
-******************************************** Chapter 3 -  Project Configuration ********************************************
+--> SDK Manager
+    SDK Manager is the tool used to install, update and manage Android SDK components.
 
-Desktop Target requires only 			:	JDK	|	Gradle	|	IntelliJ IDEA
+    Example:
+        Android SDK Platforms	|	Build Tools	|	Platform Tools
 
-Android Target additionally requires 	:	Android SDK		|		Android Plugin		|	ADB		|	Android Device / Emulator
 
---> Android SDK
-	SDK = Software Development Kit
-	It is a collection of tools required to build Android Applications.
-	
-	--> Android SDK Contains
-			Android APIs	|	Platform Libraries	|	Build Tools	|	Platform Tools	|	Emulator	|	ADB
+--> Android Gradle Plugin (AGP)
+    AGP is a Gradle plugin that adds Android-specific build functionality to Gradle.
 
-	--> Why do we need Android SDK?
-			Without Android SDK, Gradle cannot :	Compile Android Code	|	 Package APK	|	Run Application
+    Gradle	->	AGP	->	Android Build	->	Android SDK
 
-	--> Build Flow
-			Android Project		->	Gradle		->	Android SDK		->		APK Generated
+    Example :      agp = "9.0.0"
 
-	********************************* SDK Manager *********************************
-	SDK Manager is responsible for downloading and updating Android SDK Components.
-	
-	--> Responsibilities	:	Download SDK	|	Install Build Tools	|	Install Platform Tools	|	Install Emulator	|	Install API Levels
 
-	********************************* Android Plugin *********************************
-	The Android Plugin adds Android development support to IntelliJ IDEA.
+--> Kotlin Plugin
+    Kotlin Plugin integrates Kotlin with Gradle and configures Kotlin compilation.
 
-	--> Responsibilities
-			Android Project Support	|	Device Manager	|	Logcat	|	SDK Integration	|	Android Run Configuration
+    Gradle	->	Kotlin Plugin	->	Kotlin Compiler	->	JVM Bytecode	->	Kotlin Plugin ≠ Kotlin Compiler.
 
-	
-	********************************* Kotlin Plugin *********************************
 
-	The Kotlin Plugin adds Kotlin language support to IntelliJ IDEA.
+--> Device Manager
+    Device Manager is used to create and manage Android Virtual Devices (AVD).
 
-	--> Responsibilities : Kotlin Syntax Highlighting | Auto Completion | Refactoring | Debugging | Kotlin Compiler Integration
-	
-	********************************* Device Manager *********************************
 
-	Device Manager manages Android Devices used for testing.
+--> Android Emulator
+    Android Emulator is software that behaves like a virtual Android device.
 
-	Supported Devices : Emulator	|	Physical Android Device
+    Computer	->	Android Emulator	->	Virtual Android Device	->	Android Application
 
-	Responsibilities  : Create Emulator | Start Emulator | Stop Emulator | Manage Virtual Devices
 
-	--> Android Emulator 
-			An Emulator is a Virtual Android Device running on the Computer.
+--> Physical Android Device
+    A real Android phone/tablet can be used to run and test the application.
 
-	--> Why do we need Emulator?
-			If a Physical Device is unavailable, we can still run and test Android Applications.
-	
-	--> Physical Android Device
-			A real Android Phone can also be used.
-			Requirements : USB Cable | USB Debugging Enabled | Developer Options Enabled
-			
-	******************************** ADB (Android Debug Bridge) *********************************
+    Usually requires : Developer Options	|	USB Debugging
 
-	ADB stands for Android Debug Bridge.
-	It is a communication tool between the Computer and an Android Device.
-	Without ADB, IntelliJ cannot communicate with the Android Device.
-	
-	Responsibilities : Detect Devices | Install APK | Execute Commands | Read Logs | Debug Applications
 
-	********************************* Environment Variables *********************************
-	Purpose	:	Point to the Android SDK Installation Directory.
-	
-	Gradle and Android Tools need to know where Android SDK is installed.
-	Common Variables :
-						ANDROID_HOME
-								OR
-						ANDROID_SDK_ROOT
+--> ADB (Android Debug Bridge)
+    ADB is a tool that allows the computer to communicate with an Android device or emulator.
 
-	********************************* JDK Configuration *********************************
+    Computer	->	ADB		->	Android Device / Emulator
 
-	--> Why configure JDK?
-		Both Gradle and Kotlin Compiler require JDK. If the wrong JDK Version is selected, the Build may fail.
+    Example:
+        adb devices	        → Shows connected Android devices/emulators.
 
-	********************************* Gradle Sync *********************************
+--> Environment Variables
+    Environment variables are system-level configuration values that tools can read.
 
-	--> What is Gradle Sync?
-		After opening an Android project, IntelliJ performs Gradle Sync
+    Example:
+        PATH	|	ANDROID_HOME
 
-		Flow : Read Gradle Files	->	Load Plugins	->	Resolve Dependencies	->	Configure Android SDK	->	Configure IntelliJ Project	->	Project Ready
-		
-		During Sync : Read Gradle Files | Resolve Dependencies | Download Missing Libraries | Configure Plugins | Configure Android SDK
+    They can help tools locate required executables or development resources.
 
-	--> Why does Gradle Sync fail?
+    Project-specific Android SDK location can also be configured through local.properties.
 
-	Common Reasons : No Internet | Wrong SDK Path | Missing SDK | Plugin Version Mismatch | Kotlin Version Mismatch | Corrupted Gradle Cache
-	
-	******************************** Running the Application ********************************
-	
-	--> Desktop Target
-			Flow :	IntelliJ	->	Gradle	->	Kotlin Compiler		->	JVM		->		Compose Runtime		->		Desktop Window Opens
 
-	--> Android Target
+--> Complete Configuration Flow
 
-			Flow :	IntelliJ	->	Gradle	->	Android SDK		->	Generate APK	->	 ADB	->	 Android Emulator / Physical Device		->		Application Starts
-	
-	--> Device Detection
-		IntelliJ uses ADB to detect available Android Devices.
-		Detected Devices can be :	Emulator	|	Physical Android Device
-		
-	--> Run Configurations
-			Run Configurations tell IntelliJ how the application should be started.
+    IntelliJ IDEA
+        ↓
+    Gradle
+        ↓
+    Kotlin Plugin + Compose Plugin + AGP
+        ↓
+    Kotlin / Android Build
+        ↓
+    SDK / Required Tools
+        ↓
+    Emulator / Physical Device
+        ↓
+    Android Application
 
-			Common Run Configurations :	Desktop	|	Android
+********************************* E. RUNNING THE APPLICATION *********************************	
+--> Desktop Target
+    Desktop application can be run through:
 
-			Each configuration contains :	Target Platform	|	Main Entry Point	|	Build Configuration
-			
-			
-******************************************** Chapter 4 -  Project Structure ********************************************
-A Compose Multiplatform project is organized into multiple Modules.
-Each Module has a specific responsibility.
+        Gradle
+            ↓
+        desktopApp
+            ↓
+        Tasks
+            ↓
+        compose desktop
+            ↓
+        run
 
-Project Structure :
+       This executes the Desktop application on Windows.
 
-	AtekGate
-	│
-	├── androidApp
-	├── desktopApp
-	├── shared
-	│
-	├── build.gradle.kts
-	├── settings.gradle.kts
-	├── gradle.properties
-	├── local.properties
-	├── gradlew
-	├── gradlew.bat
-	├── README.md
-	├── .gitignore
-	│
-	├── build
-	├── .gradle
-	├── .idea
-	├── .kotlin
-	└── gradle
+    We also have a Desktop Run Configuration in IntelliJ, which can be selected from the top-right Run Configuration selector and started using Run ▶.
 
-====================================================================================================
-******************************** Part 1 - Multiplatform Architecture ********************************
+--> Android Emulator
+
+    Android Emulator = virtual Android device running on the development computer.
+
+    --> Create Emulator
+
+			IntelliJ
+				↓
+			Device Manager
+				↓
+			Create Virtual Device
+				↓
+			Select Device Profile
+				↓
+			Select System Image
+				↓
+			Download System Image if required
+				↓
+			Create Virtual Device
+				↓
+			Start Emulator
+
+    --> Device Profile
+        Defines the virtual device's hardware/screen characteristics.
+
+        Example:
+            Resizable (Experimental)
+
+        Useful when testing responsive UI across different screen sizes.
+
+    --> System Image
+        System Image = Android OS image that the emulator runs.
+
+        Example:
+            API 36
+            Android 16
+            Google APIs
+            Intel x86_64
+
+        API Level → Android platform/API version.
+        Google APIs → Google APIs included in the image.
+        x86_64 → CPU architecture of the emulator image.
+
+    --> Run Application
+			Android Run Configuration
+					↓
+			Select Emulator
+					↓
+			Run ▶
+					↓
+			Android Application
+
+
+--> Physical Android Device
+    A real Android phone/tablet can be used instead of an emulator.
+
+    --> Required Setup
+			Physical Android Device
+					↓
+			Developer Options
+					↓
+			USB Debugging → ON
+					↓
+			Connect device to computer
+					↓
+			Authorize computer on device
+					↓
+			Device becomes available
+
+
+	--> ADB (Android Debug Bridge)
+		ADB is the communication bridge between the computer and Android devices/emulators.
+
+			Computer
+				↓
+			   ADB
+				↓
+			Android Device / Emulator
+
+--> Device Detection
+
+    Device Detection = Development tools discovering available Android devices.
+
+    ADB is used to communicate with Android devices.
+        adb devices
+            ↓
+        Connected Devices
+
+    Example:
+
+        List of devices attached
+        ABC123456    device
+
+    "device" → Device is connected and authorized.
+
+
+--> Run Configurations
+    Run Configuration tells the IDE what application/target should be executed and how it should be run.
+
+    Example:
+        DesktopApp
+            ↓
+        Windows Desktop
+
+        Android
+            ↓
+        Emulator / Physical Device
+
+    Run Configuration ≠ Gradle Task
+        Gradle Task	            → Build-system operation.
+        Run Configuration	    → IDE configuration used to launch a target.
+
+********************************* F. PROJECT STRUCTURE *********************************	
 
 --> Root Project
-	The Root Project is the top-most project.
 
-	It contains :
+    ProjectBasic01 = Root Project.
 
-		• Modules
-		• Build Configuration
-		• Gradle Configuration
-		• Project Settings
+    Root Project = top-level Gradle project/container for the complete build. It is NOT itself the executable application.
 
-	Everything inside the project belongs to the Root Project.
+    It contains modules such as:
+        ProjectBasic01
+        ├── androidApp
+        ├── desktopApp
+        └── shared
 
-----------------------------------------------------------------------------------------------------
+
+--> Gradle Project vs Module
+
+    Gradle Project	        → a project Gradle knows how to configure/build.
+    Module			        → a distinct part of the project with its own responsibility, source code and build configuration.
+
+    Our root project contains multiple modules.
+
+
+--> settings.gradle.kts and Module Inclusion
+
+    `settings.gradle.kts` defines the structure of the Gradle build.
+    It tells Gradle which modules belong to the root project.
+
+    Example:
+        rootProject.name = "ProjectBasic01"
+
+        include(":androidApp")
+        include(":desktopApp")
+        include(":shared")
+
+    Therefore Gradle knows:
+        ProjectBasic01
+        ├── androidApp
+        ├── desktopApp
+        └── shared
+
+
+    `:` represents the root project.
+
+    Example:
+        :desktopApp:run
+
+    means:
+        run the `run` task inside the `desktopApp` module.
+
+
+--> Important
+    `rootProject.name = "ProjectBasic01"`
+	does NOT determine the Kotlin package name.
+		Example Kotlin package : package com.atek.projectbasic
 
 --> Why Multi-Module?
+    Separates responsibilities.
 
-	Compose Multiplatform supports multiple Platforms.
+    Benefits :   Better organization	|	  Reusable code	|	 Easier maintenance	|	 Clear dependencies		|	Platform separation
 
-	Instead of placing everything in one module, the project is divided into multiple Modules.
 
-	Benefits : Better Organization	|	Code Sharing	|	Platform-specific Code	|	Easier Maintenance	
+--> Current Relationship
+
+        ProjectBasic01
+        │
+        ├── androidApp  → Android
+        ├── desktopApp  → Desktop
+        └── shared      → Common/multiplatform code
+
+    Platform modules can depend on shared:
+
+        androidApp ─────→ shared
+        desktopApp ─────→ shared
+
+
+    shared should generally NOT depend on platform application modules.
+
+
+--> Current Compose Multiplatform Project Structures
+
+    Different projects/templates can use names such as:
+        androidApp	|	 desktopApp		|	shared		|		composeApp		|	  iosApp	|	 etc.
+
+    `composeApp` is simply a module name used by some project templates. It is NOT a separate technology.
+
+--> Important
+    Module/folder names do not define the architecture by themselves.
+    Responsibilities and dependencies define the architecture.
+    If a production project contains:
+        composeApp
+
+    inspect what it actually contains instead of assuming what the module does.
 	
-******************************** Part 2 : Modules ********************************	
-A Module is an independent part of the project. Each Module has its own responsibility.
+	
+	--------------------------------- Modules ----------------------------------------------------
+	
+--> Module
+    A major independently configured part of the project.
+    It can have :  Source code	|	 Dependencies	|	Gradle configuration	|	Its own responsibility
 
+--> shared
+    `shared` is the common/multiplatform module.
+    It contains code that can be shared between supported platforms.
 
---> androidApp
-
-	Purpose  :	Contains Android-specific code.
-	Examples :	Android Entry Point	|	Android Manifest	|	Android Resources	|	Android-only APIs
+    Example:
+        commonMain
+            → common application/business code
 
 
 --> desktopApp
+    `desktopApp` is the Desktop application module.
+    It contains Desktop-specific application configuration and code.
 
-	Purpose  :	Contains Desktop-specific code.
-	Examples :	main()	|	Window()	|	Desktop Configuration	|	Desktop-only APIs
+    It can depend on :  shared
+	
+--> androidApp
+    `androidApp` is the actual Android application module.
 
---> shared
+    Typical responsibilities include:
+        MainActivity	|	AndroidManifest	|	Android application setup	|	Android-specific application configuration
 
-	Purpose  :	Contains code shared between every platform.
-	Examples :	UI	|	Business Logic	|	Models	|	Utilities	|	ViewModels
+    It can depend on : shared
+
+--> composeApp
+
+    `composeApp` is a module name used by some Compose Multiplatform project templates.
+    It is NOT a special Compose technology.
+    What it contains depends on the project's architecture/template.
 
 --> Module Relationship
 
-				shared
-				   │
-			───────────────
-			│				│
-	androidApp		desktopApp
+    Current project:
+        ProjectBasic01
+        │
+        ├── androidApp
+        │       │
+        │       └────→ shared
+        │
+        ├── desktopApp
+        │       │
+        │       └────→ shared
+        │
+        └── shared
 
-	Both platform modules use code from the shared module.
+    Platform application modules use code from the shared module.
+
+--> Module Dependencies
+
+    Example from `desktopApp/build.gradle.kts`:
+        implementation(project(":shared"))
+
+
+    Example from `androidApp/build.gradle.kts`:
+        implementation(project(":shared"))
+
+    This creates:
+        desktopApp → shared
+        androidApp → shared
+
+
+    1. `project(":shared")`	        → refers to the `shared` module inside the current Gradle build.
+
+    2. `implementation`
+        → makes that dependency available to the module for compilation/runtime.
+
+    Important:
+        shared should generally NOT depend on androidApp or desktopApp.
+
+    The dependency direction should normally be:
+        androidApp ─────→ shared
+        desktopApp ─────→ shared
+
+ --------------------------------- Source Sets ----------------------------------------------------
+
 	
-====================================================================================================
-******************************** Part 3 - Source Sets ********************************
-
-The shared module contains multiple Source Sets. Each Source Set stores code for a specific platform or purpose.
-
---> commonMain
-		Purpose  :	Contains code shared by every platform.
-		Examples :	UI	|	Business Logic	|	Models	|	Utility Classes
+--> Source Set
+    A Source Set = group of source files inside a module intended for a particular platform or purpose.
 
 
---> commonTest
-		Purpose :	Contains tests for commonMain.
-
---> androidMain
-		Purpose  :	Contains Android-specific implementation.
-		Examples :	Android APIs	|	Android Services	|	Android Platform Code
+	--> Hierarchy
+			Project	->  Modules	->	 Source Sets	->	 Source Files
 		
---> androidHostTest
-		Purpose :	Contains Android Host Tests.
+		Example:
+			ProjectBasic01	->	 shared		->	 commonMain		->		Kotlin source files
 
---> jvmMain
-		Purpose  :	Contains Desktop JVM-specific implementation.
-		Examples :	Desktop APIs	|	JVM-specific Libraries	|	Desktop Platform Code
+--> Actual shared/src
 
---> jvmTest
-		Purpose :	Contains tests for jvmMain.
+    shared
+    └── src
+        ├── androidHostTest
+        ├── androidMain
+        ├── commonMain
+        ├── commonTest
+        ├── jvmMain
+        └── jvmTest
 
---> Source Set Relationship
 
-				commonMain
-					│
-			──────────────────
-			│				│
-		androidMain		jvmMain
-			│				│
-	androidHostTest		jvmTest
+	--> commonMain
+		Common production code.
+		Intended to be shared across supported platforms.
 
-	commonMain
 
-			↓
+	--> commonTest
+		Tests for common/shared code.
 
-	Code shared by every Platform.
 
-====================================================================================================
-******************************** Part 4 - Folder Ownership ********************************
+	--> androidMain
+		Android-specific production code inside the shared module.
+
+		Important:
+			androidMain       ≠	     Android code shared with Desktop.
+
+		It means:
+			Android-specific code inside the multiplatform/shared module.
+
+
+	--> androidHostTest
+		Android host-side tests.
+
+
+	--> jvmMain
+		JVM-specific production code.
+		In the current project it is relevant to the Desktop/JVM side.
+
+
+	--> jvmTest
+		Tests for JVM-specific code.
+
+
+--> Platform-specific Source Sets
+    Used when code must be different for a particular platform.
+
+    Example:
+        commonMain	            → common implementation
+        androidMain	            → Android-specific implementation
+        jvmMain	            → JVM/Desktop-specific implementation
+
+
+--> Source Set Dependency
+
+    Common code can be used by platform-specific source sets.
+
+    Conceptually:
+
+        commonMain
+           ↓
+        ┌───────────────┐
+        ↓               ↓
+    androidMain      jvmMain
+
+
+	--> expect / actual
+
+		commonMain can declare expected platform-specific functionality.
+		Platform-specific source sets provide the actual implementation.
+
+		Conceptually:
+
+			commonMain
+				expect
+				  ↓
+			┌───────────────┐
+			↓               ↓
+		androidMain       jvmMain
+			actual           actual
+
+
+--> androidApp vs shared/androidMain
+
+    androidApp
+        → actual Android application module.
+
+        Typical responsibilities : MainActivity		|	AndroidManifest		|	 Android application setup		|	Android-specific app configuration
+
+    shared/androidMain
+        → Android-specific implementation inside the shared multiplatform module.
+
+
+    Both can contain Android code, but they have different architectural ownership.
+
+
+	--> Example
+		commonMain	        → LoginRepository
+		androidMain	        → Android-specific token storage
+		jvmMain	        → Desktop-specific token storage
+
+	--------------------------------- FOLDER OWNERSHIP ----------------------------------------------------
+--> Folder Ownership
+
+[✓] build
+[✓] .gradle
+[✓] .idea
+[✓] .kotlin
+[✓] gradle
+[✓] src
+
 
 --> build
 
-	Owner	 :	Gradle
-	Purpose  :	Contains files generated during Build.
+    `build` contains generated build output.
 
-	Examples :	.class Files	|	JAR Files	|	Reports		|	Temporary Files
+    It is created by Gradle while building the project.
 
-	Note :	Generated Automatically.	|	Never modify manually.
+    It can contain things such as:
+
+        Compiled files
+        Generated files
+        Build artifacts
+        Intermediate build output
+
+    Important:
+
+        build
+            → generated output
+
+        src
+            → source code written by developers
+
+    `build` is NOT application source code.
+
+    It can generally be deleted and recreated by Gradle.
 
 
 --> .gradle
 
-	Owner	 :	Gradle
-	Purpose  :	Gradle's internal working directory.
+    `.gradle` contains Gradle's project-specific working/cache data.
 
-	Contains :	Build Cache	|	Download Cache	|	Incremental Build Information
+    It is used by Gradle while working with the project.
+
+    It is NOT application source code.
+
+    Think:
+
+        .gradle
+            → Gradle's working/cache area
 
 
 --> .idea
 
-	Owner   :	IntelliJ IDEA
-	Purpose :	Stores IntelliJ Project Settings.
+    `.idea` contains IntelliJ IDEA project configuration.
 
-	Examples :	SDK	|	Run Configurations	|	Window Layout	|	IDE Settings
+    It can contain IDE-specific settings such as:
+
+        Project configuration
+        IDE settings
+        Run configurations
+        Other IntelliJ metadata
+
+
+    Important:
+
+        .idea
+            → IntelliJ's project information
+
+        .gradle
+            → Gradle's project information
 
 
 --> .kotlin
 
-	Owner   :	Kotlin Plugin
-	Purpose :	Stores Kotlin Build Metadata.
+    `.kotlin` contains Kotlin-related generated/tooling data.
 
-	Used internally by the Kotlin Plugin.
+    It is related to Kotlin build/tooling support.
+
+    It is NOT where we normally write application source code.
 
 
 --> gradle
 
-	Owner 	:	Gradle Wrapper
+    `gradle` contains Gradle Wrapper supporting files.
 
-	Purpose :	Contains Gradle Wrapper Files.
+    The Gradle Wrapper allows the project to use the Gradle version
+    expected by the project instead of depending on a globally
+    installed Gradle version.
 
-	Structure :
-		gradle
-			└── wrapper
-				├── gradle-wrapper.jar
-				└── gradle-wrapper.properties
+    Important:
 
-	Purpose :	Automatically download and use the correct Gradle Version.
+        gradle/
+            → Wrapper supporting infrastructure
 
-====================================================================================================
-******************************** Part 5 - Root Files ********************************
+
+--> src
+
+    `src` contains the actual source code.
+
+    In a multi-module project, each module can have its own `src`.
+
+    Example:
+
+        desktopApp
+        └── src
+
+        androidApp
+        └── src
+
+        shared
+        └── src
+
+    Inside `shared/src` we have source sets such as:
+
+        commonMain
+        commonTest
+        androidMain
+        androidHostTest
+        jvmMain
+        jvmTest
+
+
+--> Simple Folder Mental Model
+
+        src
+            → source code we develop
+
+        build
+            → generated build output
+
+        .gradle
+            → Gradle working/cache data
+
+        .idea
+            → IntelliJ project settings
+
+        .kotlin
+            → Kotlin tooling/generated data
+
+        gradle
+            → Gradle Wrapper infrastructure
+
+
+
+--> Root Files
+
+[✓] build.gradle.kts
+[✓] settings.gradle.kts
+[✓] gradle.properties
+[✓] local.properties
+[✓] gradlew
+[✓] gradlew.bat
+[✓] libs.versions.toml
+[✓] README.md
+[✓] .gitignore
+
 
 --> build.gradle.kts
-	Purpose  :	Tells Gradle how to build the project.
-	Contains :	Plugins		|	Kotlin Configuration	|	Compose Configuration	|	Repositories
+
+    Root-level Gradle build configuration.
+
+    Our actual root file was:
+
+        plugins {
+            // this is necessary to avoid the plugins to be loaded
+            // multiple times in each subproject's classloader
+
+            alias(libs.plugins.androidApplication) apply false
+            alias(libs.plugins.androidMultiplatformLibrary) apply false
+            alias(libs.plugins.composeMultiplatform) apply false
+            alias(libs.plugins.composeCompiler) apply false
+            alias(libs.plugins.kotlinJvm) apply false
+            alias(libs.plugins.kotlinMultiplatform) apply false
+        }
+
+
+--> plugins {}
+
+    `plugins {}` declares Gradle plugins used/available for the
+    project.
+
+    A plugin adds specific build functionality/configuration to Gradle.
+
+    Examples:
+
+        Android Application
+        Kotlin/JVM
+        Kotlin Multiplatform
+        Compose Multiplatform
+        Compose Compiler
+
+
+--> alias(...)
+
+    Example:
+
+        alias(libs.plugins.kotlinJvm)
+
+    gets the plugin definition from the project's Version Catalog:
+
+        gradle/libs.versions.toml
+
+
+    So:
+
+        libs.plugins.kotlinJvm
+            → plugin definition/version from Version Catalog
+
+
+--> apply false
+
+    Example:
+
+        alias(libs.plugins.kotlinJvm) apply false
+
+
+    Means:
+
+        The plugin is declared/available here,
+        but it is NOT applied to the root project itself.
+
+
+    Individual modules can then apply the plugins they need.
+
+    Example:
+
+        desktopApp
+            → Kotlin/JVM
+            → Compose Multiplatform
+            → Compose Compiler
+
+        androidApp
+            → Android Application
+            → Compose Compiler
+
+
+--> Why root build.gradle.kts has these plugins?
+
+    The root project declares the plugins centrally.
+
+    Modules can then use the required plugins without having the
+    root project itself use those plugins as an application module.
+
+
+--> Important
+
+    Root `build.gradle.kts` does NOT mean:
+
+        "Build the Desktop application here."
+
+    It is root-level Gradle configuration.
+
+    The actual module build files contain module-specific
+    configuration.
+
 
 
 --> settings.gradle.kts
-	Purpose  :	Configure the Root Project.
-	Contains :	Project Name	|	Plugin Management
+
+    `settings.gradle.kts` defines/sets up the Gradle build structure.
+
+    It tells Gradle:
+
+        What is the root project?
+        Which modules belong to the build?
+        Where can plugins be resolved?
+        Where can dependencies be resolved?
+
+
+--> Actual settings.gradle.kts
+
+    Our actual file was:
+
+        rootProject.name = "ProjectBasic01"
+
+        pluginManagement {
+            repositories {
+                google {
+                    mavenContent {
+                        includeGroupAndSubgroups("androidx")
+                        includeGroupAndSubgroups("com.android")
+                        includeGroupAndSubgroups("com.google")
+                    }
+                }
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+
+        dependencyResolutionManagement {
+            repositories {
+                google {
+                    mavenContent {
+                        includeGroupAndSubgroups("androidx")
+                        includeGroupAndSubgroups("com.android")
+                        includeGroupAndSubgroups("com.google")
+                    }
+                }
+                mavenCentral()
+            }
+        }
+
+        plugins {
+            id("org.gradle.toolchains.foojay-resolver-convention")
+                version "1.0.0"
+        }
+
+        include(":androidApp")
+        include(":desktopApp")
+        include(":shared")
+
+
+--> rootProject.name
+
+    Example:
+
+        rootProject.name = "ProjectBasic01"
+
+    Gives the root Gradle project its name.
+
+    It does NOT determine the Kotlin package name.
+
+
+--> pluginManagement
+
+    `pluginManagement` controls plugin resolution configuration.
+
+    Example:
+
+        pluginManagement {
+            repositories {
+                ...
+            }
+        }
+
+    The repositories tell Gradle where it can look for Gradle plugins.
+
+    Our project uses:
+
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+
+
+--> includeGroupAndSubgroups
+
+    Our Google repository configuration contains:
+
+        includeGroupAndSubgroups("androidx")
+        includeGroupAndSubgroups("com.android")
+        includeGroupAndSubgroups("com.google")
+
+
+    This limits which groups are considered from the Google
+    repository.
+
+    We do NOT need to memorize this configuration now.
+
+    Important concept:
+
+        pluginManagement
+            → plugin resolution configuration
+
+
+--> dependencyResolutionManagement
+
+    Defines how Gradle resolves external libraries/dependencies.
+
+    Our project configures:
+
+        google()
+        mavenCentral()
+
+
+    Conceptually:
+
+        Plugin repositories
+            → plugins
+
+        Dependency repositories
+            → libraries/dependencies
+
+
+--> settings-level plugins
+
+    Our settings file contains:
+
+        plugins {
+            id("org.gradle.toolchains.foojay-resolver-convention")
+                version "1.0.0"
+        }
+
+
+    This is a Gradle plugin applied at the settings/build level.
+
+    Detailed Foojay behavior is not required to memorize now.
+
+
+--> include(...)
+
+    Example:
+
+        include(":androidApp")
+        include(":desktopApp")
+        include(":shared")
+
+
+    Tells Gradle that these modules belong to the root build.
+
+
+--> `:` meaning
+
+    `:` represents the root project.
+
+    Therefore:
+
+        :shared
+            → shared module in the root project
+
+        :desktopApp
+            → desktopApp module in the root project
+
+        :desktopApp:run
+            → run task inside desktopApp
+
+
+--> Important Role of settings.gradle.kts
+
+    Think:
+
+        settings.gradle.kts
+              ↓
+        "What is this Gradle build
+         and what belongs to it?"
+
+
+    It establishes the build structure and configuration needed
+    before Gradle can work with the modules.
+
+
 
 --> gradle.properties
-	Purpose  :	Store project-wide configuration.
-	Examples :	Kotlin Version	|	Compose Version	|	JVM Arguments
+
+    `gradle.properties` contains Gradle/project properties.
+
+    It can contain project-wide configuration related to things such as:
+
+        Gradle behavior
+        Build settings
+        Performance/configuration properties
+
+
+    Think:
+
+        gradle.properties
+            → project/Gradle properties
+
 
 --> local.properties
 
-	Purpose   : Stores local machine configuration.
-	Example   : Android SDK Location
+    `local.properties` contains machine-specific local configuration.
 
-	Important : This file is machine-specific.It is normally NOT shared with other developers.
+    Common example:
+
+        Android SDK location
+
+
+    It is specific to the developer's machine and normally should
+    not be treated as shared project configuration.
 
 
 --> gradlew
-		Purpose :	Gradle Wrapper launcher for Linux/macOS.
+
+    Gradle Wrapper launcher for:
+
+        Linux
+        macOS
+
+
+    It allows the project to use its configured Gradle version.
+
 
 --> gradlew.bat
-		Purpose :	Gradle Wrapper launcher for Windows.
+
+    Gradle Wrapper launcher for:
+
+        Windows
+
+
+    Example:
+
+        .\gradlew.bat build
+
+
+    The Wrapper uses the project's configured Gradle version instead
+    of relying on whatever Gradle version happens to be installed
+    globally.
+
+
+--> Gradle vs Gradle Wrapper
+
+    Gradle
+        → actual build system/manager.
+
+    Gradle Wrapper
+        → project-controlled mechanism for using the required
+          Gradle version.
+
+    gradlew
+        → Linux/macOS launcher.
+
+    gradlew.bat
+        → Windows launcher.
+
+    gradle/
+        → Wrapper supporting files.
+
+
+
+--> libs.versions.toml
+
+    `libs.versions.toml` is the project's Version Catalog.
+
+    It provides a central place for defining:
+
+        Library versions
+        Plugin versions
+        Dependency aliases
+        Plugin aliases
+
+
+    Example:
+
+        libs.plugins.kotlinJvm
+        libs.plugins.composeCompiler
+        libs.kotlinx.coroutinesSwing
+
+
+    Instead of repeating dependency/plugin information in every
+    Gradle file, modules can reference the centralized definitions.
+
+
+--> Connection with build.gradle.kts
+
+    Example:
+
+        alias(libs.plugins.kotlinJvm)
+
+
+    `libs.plugins.kotlinJvm`
+        ↓
+    Version Catalog
+        ↓
+    gradle/libs.versions.toml
+        ↓
+    Kotlin/JVM plugin definition
+
+
+    So `libs` is not a library itself.
+
+    It is the generated accessor used to access entries from the
+    Version Catalog.
 
 
 --> README.md
-		Purpose  :	Project Documentation.
-		Contains :	Project Overview	|	Setup Instructions	|	Usage Guide
+
+    `README.md` contains project documentation.
+
+    It can explain:
+
+        What the project is
+        How to build it
+        How to run it
+        Setup instructions
+        Other project information
+
 
 --> .gitignore
-		Purpose  :	Tells Git which files and folders should NOT be tracked.
-		Examples :	build/	|	.gradle/	|	local.properties
+
+    `.gitignore` tells Git which files/folders should NOT normally
+    be tracked in the repository.
+
+    Common examples include:
+
+        Generated build output
+        IDE-specific files
+        Machine-specific files
+        Other local/generated data
 
 
-******************************************** Chapter 5 - Build Lifecycle ********************************************
-Build Lifecycle is the complete process from clicking the Run button until the application is displayed on the screen.
+--> Root Structure Mental Model
 
---> Complete Build Lifecycle 
-
-	Click Run	->	Gradle Starts	->	Read settings.gradle.kts	->	Read build.gradle.kts	->	Download Plugins	->	Download Dependencies	->	Configure Plugins
-																																								|
-																																								|
-																																								↓
-	Load Application Classes 	<-	 JVM Startup 	<-	 Package Application 	<-	 Generate JVM Bytecode (.class)	<-	 Compose Compiler Plugin	<-	 Compile Kotlin
-		|
-		|
-		↓
-	main()	->	application()	->	Compose Runtime Starts	->	Window()	->	Operating System Creates Native Window	->	Composition	->	Composable Functions Execute	->	UI Displayed
-
-
---> Click Run	:	When the Run button is clicked, IntelliJ IDEA starts the Gradle Build Process.
-
---> Gradle Starts	:	Gradle becomes responsible for building and running the project.
-		Responsibilities : Read Build Configuration | Download Required Components | Compile Source Code | Package Application | Run Application
-
---> Read settings.gradle.kts	:	Gradle first reads settings.gradle.kts.
-		Purpose :	Identify Root Project	|	Configure Plugin Management	|	Locate Plugin Repositories
-
---> Read build.gradle.kts	:	Gradle now reads build.gradle.kts.
-		Purpose :	Load Plugins	|	Configure Kotlin	|	Configure Compose	|	Configure Repositories	|	Configure Build
-
---> Download Plugins	:	If required Plugins are not available, Gradle downloads them.
-		Examples :	Kotlin Multiplatform Plugin	|	Compose Multiplatform Plugin
-
---> Download Dependencies	:	Gradle downloads project Libraries.
-		Examples :	Compose Runtime	|	Coroutines	|	SQLite	|	Retrofit	|	Ktor
-
---> Configure Plugins	:	After downloading, Gradle initializes every Plugin.
-		Examples :	Kotlin Plugin	|	Compose Plugin
-
---> Compile Kotlin	:	Kotlin Compiler converts	:	.kt Files	->	JVM Bytecode	->	.class Files
-
---> Compose Compiler Plugin	:	The Compose Compiler Plugin extends the Kotlin Compiler.
-		Purpose :	Process @Composable Functions.	->	Generate additional Compose-specific code.
-
---> Generate Bytecode
-		Result of Compilation :	.class Files
-		Bytecode is understood by the JVM, not by the Operating System.
-
---> Package Application	:	Gradle packages everything together.
-		Application Package contains : .class Files	|	Kotlin Runtime	|	Compose Runtime	|	External Libraries
+    ProjectBasic01
+    │
+    ├── .gradle              → Gradle working/cache data
+    ├── .idea                → IntelliJ configuration
+    ├── .kotlin              → Kotlin tooling data
+    ├── gradle               → Gradle Wrapper infrastructure
+    │
+    ├── androidApp
+    │   └── src              → Android source code
+    │
+    ├── desktopApp
+    │   └── src              → Desktop source code
+    │
+    ├── shared
+    │   └── src              → Multiplatform source sets
+    │
+    ├── build.gradle.kts     → Root Gradle configuration
+    ├── settings.gradle.kts  → Build structure/module inclusion
+    ├── gradle.properties    → Gradle/project properties
+    ├── local.properties     → Machine-specific configuration
+    ├── gradlew              → Wrapper launcher (Linux/macOS)
+    ├── gradlew.bat          → Wrapper launcher (Windows)
+    ├── README.md            → Project documentation
+    └── .gitignore           → Git ignore rules
 
 
---> JVM Startup	:	Gradle starts the JVM.
-		JVM Responsibilities : Load Classes | Allocate Memory | Execute Bytecode
+----- G. BUILD LIFECYCLE -----
 
---> Load Application Classes	:	The JVM loads all required .class files into memory.
-		Examples :	MainKt.class	|	Compose Classes	|	Application Classes
+[✓] Click Run
+[✓] Gradle Starts
+[✓] Read settings.gradle.kts
+[✓] Configure Project
+[✓] Read build.gradle.kts
+[✓] Resolve Plugins
+[✓] Resolve Dependencies
+[✓] Compile Kotlin
+[✓] Compose Compiler
+[✓] Generate JVM Bytecode
+[✓] Package Application
+[✓] JVM Startup
+[✓] Compose Runtime Startup
+[✓] main()
+[✓] application()
+[✓] Window()
+[✓] UI Displayed
 
---> main()	:	The JVM starts execution from	main()	This is the Entry Point of the application.
+ --------------------------------- FOLDER OWNERSHIP ----------------------------------------------------
+
+--> Complete Build + Runtime Flow
+
+    BUILD TIME
+
+    Click Run
+        ↓
+    Gradle Starts
+        ↓
+    Read project configuration
+        ↓
+    Configure Project
+        ↓
+    Read build.gradle.kts
+        ↓
+    Resolve Plugins
+        ↓
+    Resolve Dependencies
+        ↓
+    Compile Kotlin
+        ↓
+    Compose Compiler
+        ↓
+    Generate JVM Bytecode
+        ↓
+    Package / Prepare Application
+        ↓
+    RUNTIME
+        ↓
+    JVM Starts
+        ↓
+    main()
+        ↓
+    application()
+        ↓
+    Window()
+        ↓
+    Compose Runtime
+        ↓
+    UI Displayed
 
 
---> application()	:	main() calls	application()
-		Purpose :	Start the Compose Runtime.Create the Compose Environment.
+--> 1. Click Run
 
---> Compose Runtime Starts	:	The Compose Runtime becomes responsible for - 	• Composition	|	• State Management	|	• Recomposition	|	• UI Rendering
+    When we click Run in IntelliJ, IntelliJ knows which application
+    or target we want to launch.
+
+    IntelliJ coordinates the process.
+
+    IntelliJ itself does NOT compile the Kotlin source code.
+
+    For our Desktop application, the process eventually uses Gradle
+    and the Desktop run task.
 
 
---> Window()	:	application() executes	Window()
-		Window()
-			↓
-	Requests the Operating System
-			↓
-	Create a Native Window
+--> 2. Gradle Starts
 
---> Operating System Creates Native Window
-		The Operating System creates the actual Desktop Window.
-		Compose does NOT create the Window.	It requests the Operating System to create it.
+    Gradle takes control of the build/run process.
+
+    It needs to understand:
+
+        Project structure
+        Modules
+        Plugins
+        Dependencies
+        Tasks
+        Build configuration
+
+
+--> 3. Read settings.gradle.kts
+
+    Gradle uses `settings.gradle.kts` to understand the structure
+    of the Gradle build.
+
+    Example:
+
+        rootProject.name = "ProjectBasic01"
+
+        include(":androidApp")
+        include(":desktopApp")
+        include(":shared")
+
+
+    Gradle learns:
+
+        ProjectBasic01
+        ├── androidApp
+        ├── desktopApp
+        └── shared
+
+
+    Important:
+
+        settings.gradle.kts
+            → establishes the Gradle build structure.
+
+
+--> 4. Configure Project
+
+    Gradle configures the root project and its modules.
+
+    It processes the Gradle configuration to understand:
+
+        Module type
+        Plugins
+        Dependencies
+        Tasks
+        Build settings
+
+
+    This is called the configuration phase.
+
+    Simple meaning:
+
+        Gradle first understands how the project is configured
+        before performing the required build task.
+
+
+--> 5. Read build.gradle.kts
+
+    Gradle processes the relevant `build.gradle.kts` files.
+
+    For our Desktop application, the important module is:
+
+        desktopApp/build.gradle.kts
+
+
+    It contains information such as:
+
+        Plugins
+        Dependencies
+        mainClass
+        Desktop configuration
+        Native distribution configuration
+
+
+    Example:
+
+        plugins {
+            alias(libs.plugins.kotlinJvm)
+            alias(libs.plugins.composeMultiplatform)
+            alias(libs.plugins.composeCompiler)
+        }
+
+
+--> 6. Resolve Plugins
+
+    Gradle identifies and obtains the plugins required by the
+    project/module.
+
+    Our Desktop module uses plugins such as:
+
+        Kotlin/JVM
+        Compose Multiplatform
+        Compose Compiler
+
+
+    Plugin resolution means:
+
+        "Find the required Gradle plugins and make them available
+         to configure/build this project."
+
+
+--> 7. Resolve Dependencies
+
+    Gradle determines which libraries and modules are required.
+
+    Example:
+
+        implementation(project(":shared"))
+
+        implementation(compose.desktop.currentOs)
+
+        implementation(libs.kotlinx.coroutinesSwing)
+
+
+    So conceptually:
+
+        desktopApp
+            ↓
+        shared
+        Compose Desktop
+        Coroutines
+        Other required libraries
+
+
+    If a required external dependency is not already available
+    locally, Gradle obtains it from the configured repositories.
+
+
+--> 8. Compile Kotlin
+
+    Now the Kotlin source code is compiled.
+
+        Kotlin Source Code
+              ↓
+        Kotlin Compiler
+              ↓
+        JVM Bytecode
+
+
+    Example:
+
+        main.kt
+        App.kt
+        other Kotlin files
+              ↓
+        Compilation
+              ↓
+        JVM-compatible output
+
+
+--> 9. Compose Compiler
+
+    Compose-specific compilation support processes Compose-related
+    code during the Kotlin compilation process.
+
+    Example:
+
+        @Composable
+        fun App() {
+            ...
+        }
+
+
+    Compose code requires special compiler support so that it can
+    work correctly with Compose Runtime.
+
+
+    Conceptually:
+
+        Kotlin + Compose Source
+                ↓
+        Compose Compiler Plugin
+                ↓
+        Kotlin Compilation
+                ↓
+        JVM Bytecode
+
+
+    Important:
+
+        Compose Compiler
+            ≠
+        completely separate compiler replacing Kotlin Compiler.
+
+    It is part of the Compose-aware compilation process.
+
+
+--> 10. Generate JVM Bytecode
+
+    Kotlin source code is ultimately converted into JVM bytecode.
+
+    Example:
+
+        Kotlin source
+             ↓
+        Kotlin Compiler
+             ↓
+        JVM bytecode
+             ↓
+        .class files / compiled output
+
+
+    JVM bytecode is the form that the JVM can execute.
+
+
+--> 11. Package Application
+
+    Gradle prepares the compiled application and required resources
+    for running or distributing it.
+
+    For Desktop, Compose Desktop can also be configured to create
+    native distribution formats:
+
+        MSI
+            → Windows
+
+        DMG
+            → macOS
+
+        DEB
+            → Linux
+
+
+    Important:
+
+        Normal development Run
+            → does NOT necessarily create final installers for
+              every platform.
+
+        Distribution/package task
+            → can create the configured native packages.
+
+
+=========================== RUNTIME ===========================
+
+
+--> 12. JVM Startup
+
+    After the application has been prepared for execution, the JVM
+    starts the Desktop application.
+
+    JVM:
+
+        Loads the required classes
+        Starts the application
+        Executes JVM bytecode
+
+
+    Conceptually:
+
+        JVM
+          ↓
+        Application classes
+          ↓
+        Entry point
+
+
+--> 13. main()
+
+    `main()` is the entry point of the Kotlin application.
+
+    Example:
+
+        fun main() {
+            ...
+        }
+
+
+    Our Desktop configuration contains:
+
+        mainClass = "com.atek.projectbasic.MainKt"
+
+
+    A top-level Kotlin `main()` function is compiled into a JVM class.
+
+    Therefore:
+
+        com.atek.projectbasic.MainKt
+
+
+    represents the generated JVM class containing the top-level
+    `main()` function.
+
+
+    Conceptually:
+
+        JVM
+          ↓
+        MainKt
+          ↓
+        main()
+
+
+--> 14. application()
+
+    Our Desktop application can have:
+
+        fun main() = application {
+            ...
+        }
+
+
+    `application()` establishes the Compose Desktop application
+    environment and lifecycle.
+
+    Simple meaning:
+
+        application()
+            → starts/establishes the Compose Desktop application
+              environment.
+
+
+    It provides the application-level environment in which Desktop
+    windows can exist.
+
+
+--> 15. Window()
+
+    Inside the application:
+
+        Window(
+            onCloseRequest = ::exitApplication
+        ) {
+            App()
+        }
+
+
+    `Window()` creates/configures the Desktop application window
+    and provides the Compose content displayed inside that window.
+
+
+--> application() vs Window()
+
+    application()
+        → application-level Compose Desktop environment/lifecycle.
+
+    Window()
+        → Desktop window + Compose content host.
+
+
+    Therefore:
+
+        application()
+            ↓
+        Window()
+            ↓
+        Compose UI content
+
+
+--> 16. Compose Runtime Startup
+
+    Now Compose Runtime manages the Compose UI.
+
+    Compose Runtime handles mechanisms such as:
+
+        Composition
+        State
+        Recomposition
+        UI hierarchy
+
 
 --> Composition
-		Compose executes every Composable Function.
-			Examples :	App()	|	MainScreen()	|	Button()	|	Text()
-		Compose combines them into one UI Tree.
 
---> UI Displayed
-		After Composition completes, the UI is rendered inside the Native Window.
-		The application is now ready for user interaction.
+    Composition = Compose's process of building and maintaining
+    the UI structure described by composable functions.
+
+
+    Example:
+
+        @Composable
+        fun App() {
+            Text("Hello")
+        }
+
+
+    Compose Runtime works with the composable functions to create
+    and maintain the UI.
+
+
+--> 17. UI Displayed
+
+    Finally the UI is displayed inside the Desktop window.
+
+    Example:
+
+        @Composable
+        fun App() {
+            Text("Hello")
+        }
+
+
+    Result:
+
+        Window
+        ┌───────────────────────────┐
+        │ ProjectBasic01            │
+        │                           │
+        │ Hello                     │
+        │                           │
+        └───────────────────────────┘
+
+
+
+--> BUILD WORLD
+
+    The build side prepares the application:
+
+        Gradle
+        Plugins
+        Dependencies
+        Kotlin Compiler
+        Compose Compiler
+        JVM Bytecode
+        Packaging
+
+
+    Purpose:
+
+        Turn source code into something that can run.
+
+
+--> RUNTIME WORLD
+
+    The runtime side actually runs the application:
+
+        JVM
+        main()
+        application()
+        Window()
+        Compose Runtime
+        Composition
+        UI
+
+
+    Purpose:
+
+        Execute the application and display/maintain the UI.
+
+
+--> Final Mental Model
+
+    SOURCE CODE
+         ↓
+    GRADLE BUILD SYSTEM
+         ↓
+    PLUGINS + DEPENDENCIES
+         ↓
+    COMPOSE + KOTLIN COMPILATION
+         ↓
+    JVM BYTECODE
+         ↓
+    JVM
+         ↓
+    main()
+         ↓
+    application()
+         ↓
+    Window()
+         ↓
+    COMPOSE RUNTIME
+         ↓
+    UI
+
+
+--> Important
+
+    This lifecycle is a learning model.
+
+    Internally, Gradle configuration, dependency resolution,
+    compilation and execution involve more detailed steps and
+    are not always one perfectly linear sequence.
+
+    The important distinction is:
+
+        BUILD TIME
+            → prepare the application.
+
+        RUNTIME
+            → execute the application and display/maintain the UI.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ####################################################################################################################################
