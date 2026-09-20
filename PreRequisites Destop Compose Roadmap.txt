@@ -286,6 +286,3 @@
 [✓] Window()
 [✓] Compose Runtime Startup
 [✓] UI Displayed
-
-
-

@@ -3007,108 +3007,61 @@ There are two ways to create a Compose Multiplatform Project.
 		jvmMain	        → Desktop-specific token storage
 
 	--------------------------------- FOLDER OWNERSHIP ----------------------------------------------------
---> Folder Ownership
-
-[✓] build
-[✓] .gradle
-[✓] .idea
-[✓] .kotlin
-[✓] gradle
-[✓] src
-
 
 --> build
-
     `build` contains generated build output.
-
     It is created by Gradle while building the project.
 
     It can contain things such as:
-
-        Compiled files
-        Generated files
-        Build artifacts
-        Intermediate build output
+        Compiled files	|	Generated files		|	Build artifacts		|	 Intermediate build output
 
     Important:
+        build	            → generated output
+        src		            → source code written by developers
 
-        build
-            → generated output
-
-        src
-            → source code written by developers
-
-    `build` is NOT application source code.
-
-    It can generally be deleted and recreated by Gradle.
+    `build` is NOT application source code. It can generally be deleted and recreated by Gradle.
 
 
 --> .gradle
-
     `.gradle` contains Gradle's project-specific working/cache data.
-
     It is used by Gradle while working with the project.
-
     It is NOT application source code.
 
     Think:
-
-        .gradle
-            → Gradle's working/cache area
-
+        .gradle	            → Gradle's working/cache area	
 
 --> .idea
-
     `.idea` contains IntelliJ IDEA project configuration.
 
     It can contain IDE-specific settings such as:
-
-        Project configuration
-        IDE settings
-        Run configurations
-        Other IntelliJ metadata
+        Project configuration	|	IDE settings	|	Run configurations	|	Other IntelliJ metadata
 
 
     Important:
-
-        .idea
-            → IntelliJ's project information
-
-        .gradle
-            → Gradle's project information
+        .idea	            → IntelliJ's project information
+        .gradle	            → Gradle's project information
 
 
 --> .kotlin
-
     `.kotlin` contains Kotlin-related generated/tooling data.
-
     It is related to Kotlin build/tooling support.
-
     It is NOT where we normally write application source code.
 
 
 --> gradle
-
     `gradle` contains Gradle Wrapper supporting files.
 
-    The Gradle Wrapper allows the project to use the Gradle version
-    expected by the project instead of depending on a globally
-    installed Gradle version.
+    The Gradle Wrapper allows the project to use the Gradle version expected by the project instead of depending on a globally installed Gradle version.
 
     Important:
-
-        gradle/
-            → Wrapper supporting infrastructure
+        gradle/	            → Wrapper supporting infrastructure
 
 
 --> src
-
     `src` contains the actual source code.
-
     In a multi-module project, each module can have its own `src`.
 
     Example:
-
         desktopApp
         └── src
 
@@ -3120,47 +3073,7 @@ There are two ways to create a Compose Multiplatform Project.
 
     Inside `shared/src` we have source sets such as:
 
-        commonMain
-        commonTest
-        androidMain
-        androidHostTest
-        jvmMain
-        jvmTest
-
-
---> Simple Folder Mental Model
-
-        src
-            → source code we develop
-
-        build
-            → generated build output
-
-        .gradle
-            → Gradle working/cache data
-
-        .idea
-            → IntelliJ project settings
-
-        .kotlin
-            → Kotlin tooling/generated data
-
-        gradle
-            → Gradle Wrapper infrastructure
-
-
-
---> Root Files
-
-[✓] build.gradle.kts
-[✓] settings.gradle.kts
-[✓] gradle.properties
-[✓] local.properties
-[✓] gradlew
-[✓] gradlew.bat
-[✓] libs.versions.toml
-[✓] README.md
-[✓] .gitignore
+        commonMain	|	 commonTest	|	androidMain	|	androidHostTest	|	jvmMain	|	jvmTest
 
 
 --> build.gradle.kts
@@ -3170,8 +3083,7 @@ There are two ways to create a Compose Multiplatform Project.
     Our actual root file was:
 
         plugins {
-            // this is necessary to avoid the plugins to be loaded
-            // multiple times in each subproject's classloader
+            // this is necessary to avoid the plugins to be loaded multiple times in each subproject's classloader
 
             alias(libs.plugins.androidApplication) apply false
             alias(libs.plugins.androidMultiplatformLibrary) apply false
@@ -3182,102 +3094,66 @@ There are two ways to create a Compose Multiplatform Project.
         }
 
 
---> plugins {}
+	--> plugins {}
 
-    `plugins {}` declares Gradle plugins used/available for the
-    project.
+		`plugins {}` declares Gradle plugins used/available for the project.
+		A plugin adds specific build functionality/configuration to Gradle.
 
-    A plugin adds specific build functionality/configuration to Gradle.
-
-    Examples:
-
-        Android Application
-        Kotlin/JVM
-        Kotlin Multiplatform
-        Compose Multiplatform
-        Compose Compiler
+		Examples:
+			Android Application	|	Kotlin/JVM	|	Kotlin Multiplatform	|	Compose Multiplatform	|	Compose Compiler
 
 
---> alias(...)
+		--> alias(...)
 
-    Example:
+			Example : alias(libs.plugins.kotlinJvm)
 
-        alias(libs.plugins.kotlinJvm)
+			gets the plugin definition from the project's Version Catalog :   gradle/libs.versions.toml
 
-    gets the plugin definition from the project's Version Catalog:
-
-        gradle/libs.versions.toml
-
-
-    So:
-
-        libs.plugins.kotlinJvm
-            → plugin definition/version from Version Catalog
+			So:
+				libs.plugins.kotlinJvm
+					→ plugin definition/version from Version Catalog
 
 
---> apply false
+		--> apply false
 
-    Example:
+			Example : alias(libs.plugins.kotlinJvm) apply false
 
-        alias(libs.plugins.kotlinJvm) apply false
+			Means:
+				The plugin is declared/available here, but it is NOT applied to the root project itself.
 
+			Individual modules can then apply the plugins they need.
 
-    Means:
+			Example:
+				desktopApp
+					→ Kotlin/JVM
+					→ Compose Multiplatform
+					→ Compose Compiler
 
-        The plugin is declared/available here,
-        but it is NOT applied to the root project itself.
-
-
-    Individual modules can then apply the plugins they need.
-
-    Example:
-
-        desktopApp
-            → Kotlin/JVM
-            → Compose Multiplatform
-            → Compose Compiler
-
-        androidApp
-            → Android Application
-            → Compose Compiler
+				androidApp
+					→ Android Application
+					→ Compose Compiler
 
 
---> Why root build.gradle.kts has these plugins?
-
-    The root project declares the plugins centrally.
-
-    Modules can then use the required plugins without having the
-    root project itself use those plugins as an application module.
+	--> Why root build.gradle.kts has these plugins?
+		The root project declares the plugins centrally.
+		Modules can then use the required plugins without having the root project itself use those plugins as an application module.
 
 
---> Important
+	--> Important
 
-    Root `build.gradle.kts` does NOT mean:
+		Root `build.gradle.kts` does NOT mean : "Build the Desktop application here."
 
-        "Build the Desktop application here."
-
-    It is root-level Gradle configuration.
-
-    The actual module build files contain module-specific
-    configuration.
-
+		It is root-level Gradle configuration.
+		The actual module build files contain module-specific configuration.
 
 
 --> settings.gradle.kts
-
     `settings.gradle.kts` defines/sets up the Gradle build structure.
 
     It tells Gradle:
+        What is the root project?	|	Which modules belong to the build?	|	Where can plugins be resolved?	|	Where can dependencies be resolved?
 
-        What is the root project?
-        Which modules belong to the build?
-        Where can plugins be resolved?
-        Where can dependencies be resolved?
-
-
---> Actual settings.gradle.kts
-
-    Our actual file was:
+    Our actual file was :
 
         rootProject.name = "ProjectBasic01"
 
@@ -3318,132 +3194,82 @@ There are two ways to create a Compose Multiplatform Project.
         include(":shared")
 
 
---> rootProject.name
+	--> rootProject.name
+		Example :  rootProject.name = "ProjectBasic01"
 
-    Example:
-
-        rootProject.name = "ProjectBasic01"
-
-    Gives the root Gradle project its name.
-
-    It does NOT determine the Kotlin package name.
+		Gives the root Gradle project its name.
+		It does NOT determine the Kotlin package name.
 
 
---> pluginManagement
+	--> pluginManagement
+		`pluginManagement` controls plugin resolution configuration.
 
-    `pluginManagement` controls plugin resolution configuration.
+		Example:
+			pluginManagement {
+				repositories {
+					...
+				}
+			}
 
-    Example:
+		The repositories tell Gradle where it can look for Gradle plugins.
 
-        pluginManagement {
-            repositories {
-                ...
-            }
-        }
-
-    The repositories tell Gradle where it can look for Gradle plugins.
-
-    Our project uses:
-
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+		Our project uses:
+			google()	|	 mavenCentral()	|	gradlePluginPortal()
 
 
---> includeGroupAndSubgroups
+		--> includeGroupAndSubgroups
 
-    Our Google repository configuration contains:
+			Our Google repository configuration contains:
+				includeGroupAndSubgroups("androidx")	|	includeGroupAndSubgroups("com.android")	|	includeGroupAndSubgroups("com.google")
 
-        includeGroupAndSubgroups("androidx")
-        includeGroupAndSubgroups("com.android")
-        includeGroupAndSubgroups("com.google")
+			This limits which groups are considered from the Google repository.
 
+			We do NOT need to memorize this configuration now.
 
-    This limits which groups are considered from the Google
-    repository.
+			Important concept:
 
-    We do NOT need to memorize this configuration now.
-
-    Important concept:
-
-        pluginManagement
-            → plugin resolution configuration
+				pluginManagement
+					→ plugin resolution configuration
 
 
---> dependencyResolutionManagement
+	--> dependencyResolutionManagement
+		Defines how Gradle resolves external libraries/dependencies.
 
-    Defines how Gradle resolves external libraries/dependencies.
-
-    Our project configures:
-
-        google()
-        mavenCentral()
+		Our project configures:
+			google()	|	mavenCentral()
 
 
-    Conceptually:
 
-        Plugin repositories
-            → plugins
+	--> settings-level plugins
 
-        Dependency repositories
-            → libraries/dependencies
-
-
---> settings-level plugins
-
-    Our settings file contains:
-
-        plugins {
-            id("org.gradle.toolchains.foojay-resolver-convention")
-                version "1.0.0"
-        }
+		Our settings file contains:
+			plugins {
+				id("org.gradle.toolchains.foojay-resolver-convention")
+					version "1.0.0"
+			}
 
 
-    This is a Gradle plugin applied at the settings/build level.
-
-    Detailed Foojay behavior is not required to memorize now.
-
-
---> include(...)
-
-    Example:
-
-        include(":androidApp")
-        include(":desktopApp")
-        include(":shared")
+		This is a Gradle plugin applied at the settings/build level.
+		Detailed Foojay behavior is not required to memorize now.
 
 
-    Tells Gradle that these modules belong to the root build.
+	--> include(...)
+
+		Example:
+			include(":androidApp")
+			include(":desktopApp")
+			include(":shared")
+
+		Tells Gradle that these modules belong to the root build.
 
 
---> `:` meaning
+		--> `:` meaning
+			`:` represents the root project.
 
-    `:` represents the root project.
-
-    Therefore:
-
-        :shared
-            → shared module in the root project
-
-        :desktopApp
-            → desktopApp module in the root project
-
-        :desktopApp:run
-            → run task inside desktopApp
-
-
---> Important Role of settings.gradle.kts
-
-    Think:
-
-        settings.gradle.kts
-              ↓
-        "What is this Gradle build
-         and what belongs to it?"
-
-
-    It establishes the build structure and configuration needed
-    before Gradle can work with the modules.
+			Therefore:
+				:shared	            → shared module in the root project
+				:desktopApp	        → desktopApp module in the root project
+				:desktopApp:run		→ run task inside desktopApp
 
 
 
@@ -3452,52 +3278,34 @@ There are two ways to create a Compose Multiplatform Project.
     `gradle.properties` contains Gradle/project properties.
 
     It can contain project-wide configuration related to things such as:
-
-        Gradle behavior
-        Build settings
-        Performance/configuration properties
-
+        Gradle behavior	|	Build settings	|	Performance/configuration properties
 
     Think:
-
-        gradle.properties
-            → project/Gradle properties
+	     gradle.properties	       → project/Gradle properties
 
 
 --> local.properties
-
     `local.properties` contains machine-specific local configuration.
 
     Common example:
-
         Android SDK location
 
 
-    It is specific to the developer's machine and normally should
-    not be treated as shared project configuration.
+    It is specific to the developer's machine and normally should not be treated as shared project configuration.
 
 
 --> gradlew
 
-    Gradle Wrapper launcher for:
-
-        Linux
-        macOS
-
+    Gradle Wrapper launcher for : Linux	|	macOS
 
     It allows the project to use its configured Gradle version.
 
 
 --> gradlew.bat
 
-    Gradle Wrapper launcher for:
+    Gradle Wrapper launcher for :  Windows
 
-        Windows
-
-
-    Example:
-
-        .\gradlew.bat build
+    Example :  .\gradlew.bat build
 
 
     The Wrapper uses the project's configured Gradle version instead
@@ -3507,21 +3315,15 @@ There are two ways to create a Compose Multiplatform Project.
 
 --> Gradle vs Gradle Wrapper
 
-    Gradle
-        → actual build system/manager.
+    Gradle        			→ actual build system/manager.
 
-    Gradle Wrapper
-        → project-controlled mechanism for using the required
-          Gradle version.
+    Gradle Wrapper	        → project-controlled mechanism for using the required Gradle version.
 
-    gradlew
-        → Linux/macOS launcher.
+    gradlew 		        → Linux/macOS launcher.
 
-    gradlew.bat
-        → Windows launcher.
+    gradlew.bat			    → Windows launcher.
 
-    gradle/
-        → Wrapper supporting files.
+    gradle/			        → Wrapper supporting files.
 
 
 
@@ -3530,44 +3332,13 @@ There are two ways to create a Compose Multiplatform Project.
     `libs.versions.toml` is the project's Version Catalog.
 
     It provides a central place for defining:
-
-        Library versions
-        Plugin versions
-        Dependency aliases
-        Plugin aliases
-
+        Library versions	|	Plugin versions	|	Dependency aliases	|	Plugin aliases
 
     Example:
-
-        libs.plugins.kotlinJvm
-        libs.plugins.composeCompiler
-        libs.kotlinx.coroutinesSwing
+        libs.plugins.kotlinJvm	|	libs.plugins.composeCompiler	|	libs.kotlinx.coroutinesSwing
 
 
-    Instead of repeating dependency/plugin information in every
-    Gradle file, modules can reference the centralized definitions.
-
-
---> Connection with build.gradle.kts
-
-    Example:
-
-        alias(libs.plugins.kotlinJvm)
-
-
-    `libs.plugins.kotlinJvm`
-        ↓
-    Version Catalog
-        ↓
-    gradle/libs.versions.toml
-        ↓
-    Kotlin/JVM plugin definition
-
-
-    So `libs` is not a library itself.
-
-    It is the generated accessor used to access entries from the
-    Version Catalog.
+    Instead of repeating dependency/plugin information in every Gradle file, modules can reference the centralized definitions.
 
 
 --> README.md
@@ -3575,25 +3346,15 @@ There are two ways to create a Compose Multiplatform Project.
     `README.md` contains project documentation.
 
     It can explain:
-
-        What the project is
-        How to build it
-        How to run it
-        Setup instructions
-        Other project information
+        What the project is		|	How to build it		|	How to run it	|	Setup instructions	|	Other project information
 
 
 --> .gitignore
 
-    `.gitignore` tells Git which files/folders should NOT normally
-    be tracked in the repository.
+    `.gitignore` tells Git which files/folders should NOT normally be tracked in the repository.
 
     Common examples include:
-
-        Generated build output
-        IDE-specific files
-        Machine-specific files
-        Other local/generated data
+        Generated build output	|	IDE-specific files	|	Machine-specific files	|	Other local/generated data
 
 
 --> Root Structure Mental Model
@@ -3623,123 +3384,79 @@ There are two ways to create a Compose Multiplatform Project.
     ├── README.md            → Project documentation
     └── .gitignore           → Git ignore rules
 
+--------------------------------- BUILD LIFECYCLE ----------------------------------------------------
 
------ G. BUILD LIFECYCLE -----
-
-[✓] Click Run
-[✓] Gradle Starts
-[✓] Read settings.gradle.kts
-[✓] Configure Project
-[✓] Read build.gradle.kts
-[✓] Resolve Plugins
-[✓] Resolve Dependencies
-[✓] Compile Kotlin
-[✓] Compose Compiler
-[✓] Generate JVM Bytecode
-[✓] Package Application
-[✓] JVM Startup
-[✓] Compose Runtime Startup
-[✓] main()
-[✓] application()
-[✓] Window()
-[✓] UI Displayed
-
- --------------------------------- FOLDER OWNERSHIP ----------------------------------------------------
 
 --> Complete Build + Runtime Flow
 
     BUILD TIME
-
-    Click Run
-        ↓
-    Gradle Starts
-        ↓
-    Read project configuration
-        ↓
-    Configure Project
-        ↓
-    Read build.gradle.kts
-        ↓
-    Resolve Plugins
-        ↓
-    Resolve Dependencies
-        ↓
-    Compile Kotlin
-        ↓
-    Compose Compiler
-        ↓
-    Generate JVM Bytecode
-        ↓
-    Package / Prepare Application
-        ↓
+		
+		↓
+		
+		Click Run
+			↓
+		Gradle Starts
+			↓
+		Read project configuration - `settings.gradle.kts`
+			↓
+		Configure Project
+			↓
+		Read build.gradle.kts
+			↓
+		Resolve Plugins
+			↓
+		Resolve Dependencies
+			↓
+		Compile Kotlin
+			↓
+		Compose Compiler
+			↓
+		Generate JVM Bytecode
+			↓
+		Package / Prepare Application
+       
+	   ↓
+	   
     RUNTIME
-        ↓
-    JVM Starts
-        ↓
-    main()
-        ↓
-    application()
-        ↓
-    Window()
-        ↓
-    Compose Runtime
-        ↓
-    UI Displayed
+        
+		JVM Starts
+			↓
+		main()
+			↓
+		application()
+			↓
+		Window()
+			↓
+		Compose Runtime
+			↓
+		UI Displayed
 
 
 --> 1. Click Run
 
-    When we click Run in IntelliJ, IntelliJ knows which application
-    or target we want to launch.
-
+    When we click Run in IntelliJ, IntelliJ knows which application or target we want to launch.
     IntelliJ coordinates the process.
-
     IntelliJ itself does NOT compile the Kotlin source code.
 
-    For our Desktop application, the process eventually uses Gradle
-    and the Desktop run task.
+    For our Desktop application, the process eventually uses Gradle and the Desktop run task.
 
 
 --> 2. Gradle Starts
-
     Gradle takes control of the build/run process.
 
     It needs to understand:
-
-        Project structure
-        Modules
-        Plugins
-        Dependencies
-        Tasks
-        Build configuration
+        Project structure	|	Modules	|	Plugins	|	 Dependencies	|	Tasks	|	Build configuration
 
 
 --> 3. Read settings.gradle.kts
-
-    Gradle uses `settings.gradle.kts` to understand the structure
-    of the Gradle build.
+	Gradle uses `settings.gradle.kts` to understand the structure  of the Gradle build.
 
     Example:
-
-        rootProject.name = "ProjectBasic01"
+		rootProject.name = "ProjectBasic01"
 
         include(":androidApp")
         include(":desktopApp")
         include(":shared")
-
-
-    Gradle learns:
-
-        ProjectBasic01
-        ├── androidApp
-        ├── desktopApp
-        └── shared
-
-
-    Important:
-
-        settings.gradle.kts
-            → establishes the Gradle build structure.
 
 
 --> 4. Configure Project
@@ -3747,42 +3464,25 @@ There are two ways to create a Compose Multiplatform Project.
     Gradle configures the root project and its modules.
 
     It processes the Gradle configuration to understand:
-
-        Module type
-        Plugins
-        Dependencies
-        Tasks
-        Build settings
-
+        Module type	|	Plugins	|	Dependencies	|	Tasks	|	Build settings
 
     This is called the configuration phase.
 
     Simple meaning:
-
-        Gradle first understands how the project is configured
-        before performing the required build task.
+        Gradle first understands how the project is configured before performing the required build task.
 
 
 --> 5. Read build.gradle.kts
-
     Gradle processes the relevant `build.gradle.kts` files.
 
     For our Desktop application, the important module is:
-
         desktopApp/build.gradle.kts
 
-
     It contains information such as:
-
-        Plugins
-        Dependencies
-        mainClass
-        Desktop configuration
-        Native distribution configuration
+        Plugins		|     Dependencies	|	mainClass	|	Desktop configuration	|	Native distribution configuration
 
 
     Example:
-
         plugins {
             alias(libs.plugins.kotlinJvm)
             alias(libs.plugins.composeMultiplatform)
@@ -3791,48 +3491,25 @@ There are two ways to create a Compose Multiplatform Project.
 
 
 --> 6. Resolve Plugins
-
-    Gradle identifies and obtains the plugins required by the
-    project/module.
+    Gradle identifies and obtains the plugins required by the project/module.
 
     Our Desktop module uses plugins such as:
-
-        Kotlin/JVM
-        Compose Multiplatform
-        Compose Compiler
+        Kotlin/JVM	|	Compose Multiplatform	|	Compose Compiler
 
 
     Plugin resolution means:
-
-        "Find the required Gradle plugins and make them available
-         to configure/build this project."
+        "Find the required Gradle plugins and make them available to configure/build this project."
 
 
 --> 7. Resolve Dependencies
-
     Gradle determines which libraries and modules are required.
 
     Example:
-
         implementation(project(":shared"))
-
         implementation(compose.desktop.currentOs)
-
         implementation(libs.kotlinx.coroutinesSwing)
 
-
-    So conceptually:
-
-        desktopApp
-            ↓
-        shared
-        Compose Desktop
-        Coroutines
-        Other required libraries
-
-
-    If a required external dependency is not already available
-    locally, Gradle obtains it from the configured repositories.
+    If a required external dependency is not already available locally, Gradle obtains it from the configured repositories.
 
 
 --> 8. Compile Kotlin
@@ -3846,187 +3523,87 @@ There are two ways to create a Compose Multiplatform Project.
         JVM Bytecode
 
 
-    Example:
-
-        main.kt
-        App.kt
-        other Kotlin files
-              ↓
-        Compilation
-              ↓
-        JVM-compatible output
-
-
 --> 9. Compose Compiler
-
-    Compose-specific compilation support processes Compose-related
-    code during the Kotlin compilation process.
+    Compose-specific compilation support processes Compose-related code during the Kotlin compilation process.
 
     Example:
-
         @Composable
         fun App() {
             ...
         }
 
-
-    Compose code requires special compiler support so that it can
-    work correctly with Compose Runtime.
-
-
-    Conceptually:
-
-        Kotlin + Compose Source
-                ↓
-        Compose Compiler Plugin
-                ↓
-        Kotlin Compilation
-                ↓
-        JVM Bytecode
-
+    Compose code requires special compiler support so that it can work correctly with Compose Runtime.
 
     Important:
 
-        Compose Compiler
-            ≠
-        completely separate compiler replacing Kotlin Compiler.
-
-    It is part of the Compose-aware compilation process.
+        Compose Compiler	   ≠	     completely separate compiler replacing Kotlin Compiler.
+		It is part of the Compose-aware compilation process.
 
 
 --> 10. Generate JVM Bytecode
 
-    Kotlin source code is ultimately converted into JVM bytecode.
-
-    Example:
-
-        Kotlin source
-             ↓
-        Kotlin Compiler
-             ↓
-        JVM bytecode
-             ↓
-        .class files / compiled output
-
-
+    Kotlin source code is ultimately converted into JVM bytecode
     JVM bytecode is the form that the JVM can execute.
 
 
 --> 11. Package Application
+    Gradle prepares the compiled application and required resources for running or distributing it.
 
-    Gradle prepares the compiled application and required resources
-    for running or distributing it.
-
-    For Desktop, Compose Desktop can also be configured to create
-    native distribution formats:
-
-        MSI
-            → Windows
-
-        DMG
-            → macOS
-
-        DEB
-            → Linux
+    For Desktop, Compose Desktop can also be configured to create native distribution formats:
+        MSI	            → Windows
+        DMG	            → macOS
+        DEB	            → Linux
 
 
     Important:
-
-        Normal development Run
-            → does NOT necessarily create final installers for
-              every platform.
-
-        Distribution/package task
-            → can create the configured native packages.
-
-
-=========================== RUNTIME ===========================
+        Normal development Run	            → does NOT necessarily create final installers for  every platform.
+        Distribution/package task	        → can create the configured native packages.
 
 
 --> 12. JVM Startup
 
-    After the application has been prepared for execution, the JVM
-    starts the Desktop application.
+    After the application has been prepared for execution, the JVM starts the Desktop application.
 
     JVM:
-
-        Loads the required classes
-        Starts the application
-        Executes JVM bytecode
-
-
-    Conceptually:
-
-        JVM
-          ↓
-        Application classes
-          ↓
-        Entry point
-
+        Loads the required classes	|	Starts the application	|	Executes JVM bytecode
 
 --> 13. main()
-
     `main()` is the entry point of the Kotlin application.
 
     Example:
-
         fun main() {
             ...
         }
 
-
     Our Desktop configuration contains:
-
         mainClass = "com.atek.projectbasic.MainKt"
 
 
     A top-level Kotlin `main()` function is compiled into a JVM class.
 
     Therefore:
-
-        com.atek.projectbasic.MainKt
-
-
-    represents the generated JVM class containing the top-level
-    `main()` function.
-
-
-    Conceptually:
-
-        JVM
-          ↓
-        MainKt
-          ↓
-        main()
+        com.atek.projectbasic.MainKt    represents the generated JVM class containing the top-level `main()` function.
 
 
 --> 14. application()
 
     Our Desktop application can have:
-
         fun main() = application {
             ...
         }
 
 
-    `application()` establishes the Compose Desktop application
-    environment and lifecycle.
+    `application()` establishes the Compose Desktop application environment and lifecycle.
 
     Simple meaning:
+        application()	            → starts/establishes the Compose Desktop application environment.
 
-        application()
-            → starts/establishes the Compose Desktop application
-              environment.
-
-
-    It provides the application-level environment in which Desktop
-    windows can exist.
+    It provides the application-level environment in which Desktop windows can exist.
 
 
 --> 15. Window()
 
     Inside the application:
-
         Window(
             onCloseRequest = ::exitApplication
         ) {
@@ -4034,69 +3611,36 @@ There are two ways to create a Compose Multiplatform Project.
         }
 
 
-    `Window()` creates/configures the Desktop application window
-    and provides the Compose content displayed inside that window.
-
-
---> application() vs Window()
-
-    application()
-        → application-level Compose Desktop environment/lifecycle.
-
-    Window()
-        → Desktop window + Compose content host.
-
-
-    Therefore:
-
-        application()
-            ↓
-        Window()
-            ↓
-        Compose UI content
+    `Window()` creates/configures the Desktop application window and provides the Compose content displayed inside that window.
 
 
 --> 16. Compose Runtime Startup
-
     Now Compose Runtime manages the Compose UI.
 
     Compose Runtime handles mechanisms such as:
-
-        Composition
-        State
-        Recomposition
-        UI hierarchy
+        Composition	|	 State	|	Recomposition	|	UI hierarchy
 
 
 --> Composition
-
-    Composition = Compose's process of building and maintaining
-    the UI structure described by composable functions.
-
+    Composition = Compose's process of building and maintaining the UI structure described by composable functions.
 
     Example:
-
         @Composable
         fun App() {
             Text("Hello")
         }
 
-
-    Compose Runtime works with the composable functions to create
-    and maintain the UI.
+    Compose Runtime works with the composable functions to create and maintain the UI.
 
 
 --> 17. UI Displayed
-
     Finally the UI is displayed inside the Desktop window.
 
     Example:
-
         @Composable
         fun App() {
             Text("Hello")
         }
-
 
     Result:
 
@@ -4107,89 +3651,6 @@ There are two ways to create a Compose Multiplatform Project.
         │ Hello                     │
         │                           │
         └───────────────────────────┘
-
-
-
---> BUILD WORLD
-
-    The build side prepares the application:
-
-        Gradle
-        Plugins
-        Dependencies
-        Kotlin Compiler
-        Compose Compiler
-        JVM Bytecode
-        Packaging
-
-
-    Purpose:
-
-        Turn source code into something that can run.
-
-
---> RUNTIME WORLD
-
-    The runtime side actually runs the application:
-
-        JVM
-        main()
-        application()
-        Window()
-        Compose Runtime
-        Composition
-        UI
-
-
-    Purpose:
-
-        Execute the application and display/maintain the UI.
-
-
---> Final Mental Model
-
-    SOURCE CODE
-         ↓
-    GRADLE BUILD SYSTEM
-         ↓
-    PLUGINS + DEPENDENCIES
-         ↓
-    COMPOSE + KOTLIN COMPILATION
-         ↓
-    JVM BYTECODE
-         ↓
-    JVM
-         ↓
-    main()
-         ↓
-    application()
-         ↓
-    Window()
-         ↓
-    COMPOSE RUNTIME
-         ↓
-    UI
-
-
---> Important
-
-    This lifecycle is a learning model.
-
-    Internally, Gradle configuration, dependency resolution,
-    compilation and execution involve more detailed steps and
-    are not always one perfectly linear sequence.
-
-    The important distinction is:
-
-        BUILD TIME
-            → prepare the application.
-
-        RUNTIME
-            → execute the application and display/maintain the UI.
-
-
-
-
 
 
 
